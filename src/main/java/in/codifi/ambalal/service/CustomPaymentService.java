@@ -19,75 +19,113 @@ public class CustomPaymentService implements BasePaymentService {
 	@Inject
 	PaymentTransactionRepository paymentRepository;
 
+	
+	/**
+	 * 
+	 * capture the webhook response for webhook
+	 *
+	 * 23-June-2025
+	 * 
+	 * @author Vennila
+	 */
+	
 	@Override
 	public String getWebHookStatus(JSONObject paymentResponse) {
-		try {
-			System.out.println(" Payment razorpay WebHook 1----->    " + paymentResponse);
-			long amount = 0;
-			if (paymentResponse != null && !paymentResponse.isEmpty()) {
-				JSONObject payLoadDetails = (JSONObject) paymentResponse.get("payload");
-				if (payLoadDetails != null && !payLoadDetails.isEmpty()) {
-					JSONObject paymentDetails = (JSONObject) payLoadDetails.get("payment");
-					if (paymentDetails != null && !paymentDetails.isEmpty()) {
-						JSONObject entityDetails = (JSONObject) paymentDetails.get("entity");
-						if (entityDetails != null && !entityDetails.isEmpty()) {
-							JSONObject notesDetails = (JSONObject) entityDetails.get("notes");
-							if (notesDetails != null && !notesDetails.isEmpty()) {
-								String product = (String) notesDetails.get("Product");
-								if (StringUtil.isNotNullOrEmpty(product) && StringUtil.isEqual("address", product)) {
-									String orderId = (String) entityDetails.get("order_id");
-									String userID = (String) entityDetails.get("order_id");
-									String paymentId = (String) entityDetails.get("id");
-									String status = (String) entityDetails.get("status");
-//									boolean statusCaptured = (Boolean) entityDetails.get("captured");
-									if (StringUtil.isNotNullOrEmpty(status) && StringUtil.isEqual(status, "captured")) {
-//											&& statusCaptured) {
-										amount = (Long) entityDetails.get("amount");
-										long value = amount / 100;
-										JSONObject orderDetails = (JSONObject) payLoadDetails.get("order");
-										if (orderDetails != null && !orderDetails.isEmpty()) {
-											JSONObject orderEntityDetails = (JSONObject) orderDetails.get("entity");
-											if (orderEntityDetails != null && !orderEntityDetails.isEmpty()) {
-												String receiptId = (String) orderEntityDetails.get("receipt");
-												if (StringUtil.isNotNullOrEmpty(receiptId)
-														&& StringUtil.isNotNullOrEmpty(orderId)) {
-													PaymentTransactionEntity paymentDTO = paymentRepository
-															.findByClientCodeAndRazorpayPaymentId(receiptId, paymentId);
-													if (paymentDTO == null) {
-														paymentDTO = new PaymentTransactionEntity();
-														String clientCode = (String) notesDetails.get("clientID");
-														if (clientCode != null) {
-															paymentDTO.setClientCode(clientCode);
-														}
-														paymentDTO.setRazorpayOrderId(orderId);
-														paymentDTO.setRazorpayPaymentId(paymentId);
-														paymentDTO.setRazorpaySignature(
-																EkycConstants.RAZORPAY_WEBHOOK_SIGN);
-														paymentDTO.setStatus(EkycConstants.RAZORPAY_STATUS_COMPLETED);
-														paymentDTO
-																.setAmountPaid(Integer.parseInt(String.valueOf(value)));
-														paymentDTO.setAmountDue(0);
-														paymentRepository.save(paymentDTO);
-														System.out.println(
-																"Web hook updated for applicationId - " + receiptId);
-													}
-												}
-											}
-										}
-									}else {
-										System.out.println("the atom  status"+status);
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return "ok";
+	    try {
+	        System.out.println("Payment Razorpay WebHook -----> " + paymentResponse);
+
+	        if (paymentResponse != null && !paymentResponse.isEmpty()) {
+	            String eventType = paymentResponse.get("event") != null ? paymentResponse.get("event").toString() : null;
+
+	            JSONObject payload = (JSONObject) paymentResponse.get("payload");
+	            if (payload != null) {
+	                JSONObject payment = (JSONObject) payload.get("payment");
+	                if (payment != null) {
+	                    JSONObject entity = (JSONObject) payment.get("entity");
+	                    if (entity != null) {
+
+	                        // notes section
+	                        JSONObject notes = (JSONObject) entity.get("notes");
+	                        String clientCode = notes != null && notes.get("clientID") != null ? notes.get("clientID").toString() : null;
+	                        String product = notes != null && notes.get("product") != null ? notes.get("product").toString() : null;
+
+	                        // main fields
+	                        String orderId = entity.get("order_id") != null ? entity.get("order_id").toString() : null;
+	                        String paymentId = entity.get("id") != null ? entity.get("id").toString() : null;
+	                        String status = entity.get("status") != null ? entity.get("status").toString() : null;
+	                        long amount = entity.get("amount") != null ? Long.parseLong(entity.get("amount").toString()) : 0L;
+	                        long fee = entity.get("fee") != null ? Long.parseLong(entity.get("fee").toString()) : 0L;
+	                        long tax = entity.get("tax") != null ? Long.parseLong(entity.get("tax").toString()) : 0L;
+	                        long createdAt = entity.get("created_at") != null ? Long.parseLong(entity.get("created_at").toString()) : 0L;
+	                        String email = entity.get("email") != null ? entity.get("email").toString() : null;
+	                        String contact = entity.get("contact") != null ? entity.get("contact").toString() : null;
+	                        String method = entity.get("method") != null ? entity.get("method").toString() : null;
+	                        String currency = entity.get("currency") != null ? entity.get("currency").toString() : null;
+
+	                        // upi.vpa
+	                        String vpa = null;
+	                        if (entity.get("upi") instanceof JSONObject) {
+	                            JSONObject upi = (JSONObject) entity.get("upi");
+	                            vpa = upi.get("vpa") != null ? upi.get("vpa").toString() : null;
+	                        }
+
+	                        // acquirer_data.rrn
+	                        String rrn = null;
+	                        if (entity.get("acquirer_data") instanceof JSONObject) {
+	                            JSONObject acquirerData = (JSONObject) entity.get("acquirer_data");
+	                            rrn = acquirerData.get("rrn") != null ? acquirerData.get("rrn").toString() : null;
+	                        }
+
+//	                        long value = amount / 100;
+
+	                        if ("captured".equalsIgnoreCase(status) || "failed".equalsIgnoreCase(status)) {
+
+	                            PaymentTransactionEntity paymentDT = paymentRepository.findByClientCodeAndRazorpayPaymentId(clientCode, paymentId);
+
+	                            if (paymentDT == null) {
+	                                paymentDT = new PaymentTransactionEntity();
+	                                paymentDT.setClientCode(clientCode);
+	                                paymentDT.setRazorpayProduct(product);
+	                                paymentDT.setRazorpayOrderId(orderId);
+	                                paymentDT.setRazorpayPaymentId(paymentId);
+	                                paymentDT.setAmountPaid((int) amount);
+	                                paymentDT.setAmountDue("captured".equalsIgnoreCase(status) ? 0 : (int) amount);
+	                                paymentDT.setIsRazorpay(true);
+	                                paymentDT.setIsAtom(false);
+	                                paymentDT.setRazorpayMethod(method);
+	                                paymentDT.setRazorpayVpa(vpa);
+	                                paymentDT.setRazorpayRrn(rrn);
+	                                paymentDT.setRazorpayEmail(email);
+	                                paymentDT.setRazorpayContact(contact);
+	                                paymentDT.setRazorpayFee((int) fee);
+	                                paymentDT.setRazorpayTax((int) tax);
+	                                paymentDT.setRazorpayCurrency(currency);
+	                                paymentDT.setRazorpayCreatedAtEpoch(createdAt);
+	                                paymentDT.setRazorpaySignature(EkycConstants.RAZORPAY_WEBHOOK_SIGN);
+	                                paymentDT.setRazorpayWebhookEvent(eventType);
+	                                paymentDT.setRazorpayWebhookRawData(paymentResponse.toJSONString());
+	                                paymentDT.setIsRazorpay(true);
+	                                if ("captured".equalsIgnoreCase(status)) {
+	                                    paymentDT.setStatus(EkycConstants.RAZORPAY_STATUS_COMPLETED);
+	                                } else {
+	                                    paymentDT.setStatus(EkycConstants.RAZORPAY_STATUS_FAILED);
+	                                }
+
+	                                paymentRepository.save(paymentDT);
+	                            }
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+
+	    return "ok";
 	}
+
+
 
 	@Override
 	public Response updateAtomPayment(MultivaluedMap<String, String> formParams) {
@@ -133,7 +171,7 @@ public class CustomPaymentService implements BasePaymentService {
 	        paymentEntity.setCardNumber(cardNumber);
 	        paymentEntity.setTxnDate(txnDate);
 	        paymentEntity.setCustomerAccNo(customerAccNo);
-
+	        paymentEntity.setIsAtom(true);
 	        PaymentTransactionEntity savedEntity = paymentRepository.save(paymentEntity);
 
 	        return Response.ok(savedEntity).build();

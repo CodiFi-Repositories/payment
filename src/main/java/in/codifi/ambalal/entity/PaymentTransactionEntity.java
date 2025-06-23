@@ -79,5 +79,42 @@ public class PaymentTransactionEntity {
     @Column(name = "amount_due")
     private Integer amountDue;
 
-    // Getters and setters (or use Lombok @Data/@Getter/@Setter for brevity)
+    @Column(name = "razorpayProduct")
+    private String razorpayProduct;
+    
+    @Column(name = "razorpayMethod")
+    private String razorpayMethod;
+    
+    @Column(name = "razorpayVpa")
+    private String razorpayVpa;
+
+    @Column(name = "razorpayRrn")
+    private String razorpayRrn;
+
+    @Column(name = "razorpayEmail")
+    private String razorpayEmail;
+
+    @Column(name = "razorpayContact")
+    private String razorpayContact;
+
+    @Column(name = "razorpayFee")
+    private Integer razorpayFee;
+
+    @Column(name = "razorpayTax")
+    private Integer razorpayTax;
+
+    @Column(name = "razorpayCurrency")
+    private String razorpayCurrency;
+
+    @Column(name = "razorpayCreatedAtEpoch")
+    private Long razorpayCreatedAtEpoch;
+
+    @Column(name = "razorpayWebhookEvent")
+    private String razorpayWebhookEvent;
+
+    @Column(name = "razorpayWebhookRawData", columnDefinition = "TEXT")
+    private String razorpayWebhookRawData;
+    
+    
+    
 }

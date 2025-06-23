@@ -9,30 +9,26 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-
-
 public interface BasePaymentController {
- 
-    @Path("/getWebHookStatus")
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    String getWebHookStatus(String webResponse);
 
-    @Path("/test")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    String testMethod();
-    
-    
-    @Path("/getWebHookStatus")
-    @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getWebHookStatus(MultivaluedMap<String, String> formParams);
-    
-    
+	@Path("/getWebHookStatus")
+	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	String getWebHookStatus(String webResponse);
+
+	@Path("/test")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	String testMethod();
+
+	@Path("/getWebHookStatus")
+	@POST
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getWebHookStatus(MultivaluedMap<String, String> formParams);
+
 	/**
 	 * 
 	 * capture the webhook response for webhook
@@ -41,11 +37,11 @@ public interface BasePaymentController {
 	 * 
 	 * @author Vennila
 	 */
-    
-    
-    @Path("/getRazorpayWebHookStatus")
+
+	@Path("/getRazorpayWebHookStatus")
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	String getRazorpayWebHookStatus(String webResponse);
+
 }

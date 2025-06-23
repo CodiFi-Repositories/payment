@@ -69,7 +69,6 @@ public class CustomPaymentController implements BasePaymentController {
 //	    return Response.ok("{\"message\": \"Callback received successfully\"}").build();
 	}
 
-
 	/**
 	 * 
 	 * capture the webhook response for webhook
@@ -81,4 +80,5 @@ public class CustomPaymentController implements BasePaymentController {
 		JSONObject webHookResponse = (JSONObject) JSONValue.parse(webResponse);
 		return basePaymentService.getWebHookStatus(webHookResponse);
 	}
+	
 }
