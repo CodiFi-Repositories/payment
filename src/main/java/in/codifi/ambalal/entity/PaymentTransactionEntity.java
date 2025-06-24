@@ -116,5 +116,9 @@ public class PaymentTransactionEntity {
     private String razorpayWebhookRawData;
     
     
+    @Column(name = "razorpayAcountNumber")
+    private String razorpayAcountNumber;
+    
+    
     
 }

@@ -11,6 +11,16 @@ import in.codifi.ambalal.rms.model.RmsUpdateResponse;
 
 public interface BaseRmsApiController {
 
+	
+	/**
+	 * 
+	 * To update Rms details
+	 *
+	 * 24-June-2025
+	 * 
+	 * @author Vennila
+	 */
+ 
 	@Path("/updateRmsLimits")
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

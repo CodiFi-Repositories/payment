@@ -47,6 +47,8 @@ public class CustomPaymentService implements BasePaymentService {
 	                        // notes section
 	                        JSONObject notes = (JSONObject) entity.get("notes");
 	                        String clientCode = notes != null && notes.get("clientID") != null ? notes.get("clientID").toString() : null;
+	                        
+	                        String accountNumber = notes != null && notes.get("acc_num") != null ? notes.get("acc_num").toString() : null;
 	                        String product = notes != null && notes.get("product") != null ? notes.get("product").toString() : null;
 
 	                        // main fields
@@ -88,7 +90,7 @@ public class CustomPaymentService implements BasePaymentService {
 	                                paymentDT.setRazorpayProduct(product);
 	                                paymentDT.setRazorpayOrderId(orderId);
 	                                paymentDT.setRazorpayPaymentId(paymentId);
-	                                paymentDT.setAmountPaid((int) amount);
+	                                paymentDT.setAmountPaid((int) amount/100);
 	                                paymentDT.setAmountDue("captured".equalsIgnoreCase(status) ? 0 : (int) amount);
 	                                paymentDT.setIsRazorpay(true);
 	                                paymentDT.setIsAtom(false);
@@ -105,6 +107,7 @@ public class CustomPaymentService implements BasePaymentService {
 	                                paymentDT.setRazorpayWebhookEvent(eventType);
 	                                paymentDT.setRazorpayWebhookRawData(paymentResponse.toJSONString());
 	                                paymentDT.setIsRazorpay(true);
+	                                paymentDT.setRazorpayAcountNumber(accountNumber);
 	                                if ("captured".equalsIgnoreCase(status)) {
 	                                    paymentDT.setStatus(EkycConstants.RAZORPAY_STATUS_COMPLETED);
 	                                } else {

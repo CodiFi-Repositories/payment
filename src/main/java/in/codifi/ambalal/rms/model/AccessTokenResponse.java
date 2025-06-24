@@ -1,15 +1,20 @@
 package in.codifi.ambalal.rms.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class AccessTokenResponse {
-
+	 @JsonProperty("type")
 	private String type;
+	 @JsonProperty("code")
     private String code;
+	 @JsonProperty("description")
     private String description;
+	 @JsonProperty("result")
     private TokenResult result;
     
     
@@ -17,8 +22,12 @@ public class AccessTokenResponse {
     @Getter
     @Setter
     public static class TokenResult {
-        private String UserID;
-        private String Token;
+
+        @JsonProperty("UserID")
+        private String userID;
+
+        @JsonProperty("Token")
+        private String token;
        
     }
 }

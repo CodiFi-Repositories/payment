@@ -9,6 +9,9 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import in.codifi.ambalal.entity.CredentialKey;
 import in.codifi.ambalal.entity.RmsUpdateResponseEntity;
 import in.codifi.ambalal.repository.CredentialKeyRepositiory;
@@ -46,13 +49,21 @@ public class AecorRestService {
 		tokenRequest.setPassword(password);
 
 		AccessTokenResponse response = aecorRestService.login(tokenRequest);
+		ObjectMapper obj=new ObjectMapper();
+		
+		try {
+			System.out.println("the response"+obj.writeValueAsString(response));
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return response.getResult().getToken(); // assuming token is inside result
 	}
 
 	public RmsUpdateResponse updateRmsLimitFields(String clientId, Double amount) {
 		RmsUpdateResponse response = null;
 		String token = getJwtToken();
-
+		System.out.println("the token" + token);
 		RmsUpdateRequest request = new RmsUpdateRequest();
 		List<CredentialKey> credentialsList = credentialKeyRepositiory.findByType("rms");
 
