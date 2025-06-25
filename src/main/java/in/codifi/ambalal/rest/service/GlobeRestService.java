@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import in.codifi.ambalal.entity.AccessTokenRequest;
 import in.codifi.ambalal.entity.CredentialKey;
 import in.codifi.ambalal.entity.GlobeInquiryResponse;
+import in.codifi.ambalal.entity.PaymentTransactionEntity;
 import in.codifi.ambalal.model.AccessTokenResponse;
 import in.codifi.ambalal.model.AllocationData;
 import in.codifi.ambalal.model.AllocationRequest;
@@ -25,8 +27,10 @@ import in.codifi.ambalal.model.AllocationResponse;
 import in.codifi.ambalal.model.InquiryResponse;
 import in.codifi.ambalal.model.StatusInquiryRequest;
 import in.codifi.ambalal.model.StatusInquiryResponse;
+import in.codifi.ambalal.repository.AccessLogManager;
 import in.codifi.ambalal.repository.CredentialKeyRepositiory;
 import in.codifi.ambalal.repository.GlobeInquiryResponseRepository;
+import in.codifi.ambalal.repository.PaymentTransactionRepository;
 
 @ApplicationScoped
 public class GlobeRestService {
@@ -40,6 +44,10 @@ public class GlobeRestService {
 
 	@Inject
 	GlobeInquiryResponseRepository responseRepository;
+	@Inject
+	PaymentTransactionRepository paymentRepository;
+	@Inject
+	AccessLogManager accessLogManager;
 
 	/**
 	 * Method to getAccess token
@@ -62,7 +70,7 @@ public class GlobeRestService {
 						apiModel = globeRestService.getAccessToken(request);
 						ObjectMapper obj = new ObjectMapper();
 						System.out.println("the apiModel object is " + obj.writeValueAsString(apiModel));
-						System.out.println("the apiModel" + apiModel.getAccessToken());
+						accessLogManager.insertRestAccessLogsIntoDB(null, "Globe", obj.writeValueAsString(apiModel), "getaccessToken", "/globe/getToken");
 						break; // stop after finding the matching key
 					}
 				}
@@ -82,8 +90,9 @@ public class GlobeRestService {
 	 * @throws Exception
 	 */
 
-	public AllocationResponse callAllocationApi(String clientId, Double amount) {
+	public AllocationResponse callAllocationApi(String clientId, Double amount,String referenceNo, Long id) {
 		try {
+			AllocationResponse returnResponse=null;
 			AccessTokenResponse tokenResponse = getaccessToken();
 			if (tokenResponse != null && "Success".equalsIgnoreCase(tokenResponse.getStatus())) {
 
@@ -137,7 +146,18 @@ public class GlobeRestService {
 				payload.setDataTotalCount("1");
 				payload.setData(allocationData);
 
-				return globeRestService.sendAllocation("application/json", payload);
+				returnResponse= globeRestService.sendAllocation("application/json", payload);
+				ObjectMapper obj = new ObjectMapper();
+				accessLogManager.insertRestAccessLogsIntoDB(null, "Globe", obj.writeValueAsString(returnResponse), "callAllocationApi", "/globe/updateCallAllocationApi");
+				if(returnResponse.getMessagesCode().equalsIgnoreCase("100100")) {
+					Optional<PaymentTransactionEntity> paymentDT = paymentRepository
+							.findById(id);
+					if(!paymentDT.isEmpty()) {
+						PaymentTransactionEntity res=paymentDT.get();
+						res.setIsUpdateGlobe(true);
+						paymentRepository.save(res);
+					}
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

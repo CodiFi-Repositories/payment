@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -16,10 +17,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import in.codifi.ambalal.entity.CredentialKey;
+import in.codifi.ambalal.entity.PaymentTransactionEntity;
 import in.codifi.ambalal.model.LoginRequest;
 import in.codifi.ambalal.model.TechLoginResponse;
 import in.codifi.ambalal.model.TechReceiptRequestModel;
+import in.codifi.ambalal.repository.AccessLogManager;
 import in.codifi.ambalal.repository.CredentialKeyRepositiory;
+import in.codifi.ambalal.repository.PaymentTransactionRepository;
 
 @ApplicationScoped
 public class TechExcelService {
@@ -29,6 +33,10 @@ public class TechExcelService {
 	ITechExcelService ItechExcelService;
 	@Inject
 	CredentialKeyRepositiory credentialKeyRepositiory;
+	@Inject
+	PaymentTransactionRepository paymentRepository;
+	@Inject
+	AccessLogManager accessLogManager;
 
 	public String login() {
 		String response = null;
@@ -43,6 +51,9 @@ public class TechExcelService {
 				req.setName(credentialsMap.getOrDefault("name", ""));
 				req.setPassword(credentialsMap.getOrDefault("password", ""));
 				response = ItechExcelService.getAccessToken(req);
+				ObjectMapper obj = new ObjectMapper();
+				accessLogManager.insertRestAccessLogsIntoDB(null, "Globe", obj.writeValueAsString(response), "login",
+						"/techExcel/backofficeLogin");
 				System.out.println("the response" + response);
 			}
 		} catch (Exception e) {
@@ -51,7 +62,7 @@ public class TechExcelService {
 		return response;
 	}
 
-	public TechLoginResponse updateTechExcel(String userId, String chekNo, Double amt, String bankAccouNo) {
+	public TechLoginResponse updateTechExcel(String userId, String refNo, Double amt, String bankAccouNo, Long id) {
 		TechLoginResponse response = null;
 		try {
 			String token = login();
@@ -76,11 +87,11 @@ public class TechExcelService {
 			req.setVoucherDate(formattedDate1);
 			req.setAccountCode(userId);
 			req.setCompanyCode(credentialsMap.getOrDefault("comapnycode", ""));
-			req.setChequeNo(chekNo);
+			req.setChequeNo(refNo);
 			req.setAmount(amt);
 			req.setPostingBankAccount(credentialsMap.getOrDefault("postingbankaccount", ""));
 			req.setBankAccountNumber(bankAccouNo);
-			req.setNarration(credentialsMap.getOrDefault("narration", ""));
+			req.setNarration(refNo);
 			req.setEntryType(credentialsMap.getOrDefault("entrytype", ""));
 			req.setMode(credentialsMap.getOrDefault("mode", ""));
 			req.setActualTime(formattedDate2);
@@ -91,8 +102,19 @@ public class TechExcelService {
 			String rawToken = token.replace("\"", ""); // remove any quotes
 			String authToken = "Bearer " + rawToken;
 			System.out.println("Sending authToken: " + authToken);
-			
+
 			response = ItechExcelService.updateTechExcel(authToken, req);
+			accessLogManager.insertRestAccessLogsIntoDB(null, "Globe", obj.writeValueAsString(response),
+					"updateTechExcel", "/techExcel/updatestatus");
+			if (response.getSuccess().equalsIgnoreCase("True")) {
+				Optional<PaymentTransactionEntity> paymentDT = paymentRepository.findById(id);
+				if (!paymentDT.isEmpty()) {
+					PaymentTransactionEntity res = paymentDT.get();
+					res.setIsUpdateTechexcel(true);
+					paymentRepository.save(res);
+				}
+			}
+			return response;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

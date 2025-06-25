@@ -119,6 +119,13 @@ public class PaymentTransactionEntity {
     @Column(name = "razorpayAcountNumber")
     private String razorpayAcountNumber;
     
+    @Column(name = "is_update_techexcel")
+    private Boolean isUpdateTechexcel;
+    
+    
+    @Column(name = "is_update_globe")
+    private Boolean isUpdateGlobe;
+    
     
     
 }
