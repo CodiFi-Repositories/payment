@@ -8,16 +8,17 @@ import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import com.mysql.cj.protocol.x.MessageConstants;
+//import com.mysql.cj.protocol.x.MessageConstants;
 
 import in.codifi.ambalal.model.ResponseModel;
 import in.codifi.ambalal.repository.LogRepository;
 import in.codifi.ambalal.service.spec.ILogService;
 import in.codifi.api.utilities.EkycConstants;
-import in.codifi.kyc.error.utility.ErrorCodeConstants;
-import in.codifi.kyc.error.utility.ErrorHandling;
-import in.codifi.kyc.error.utility.ErrorMessageConstants;
-import in.codifi.kyc.utilities.CommonMethods;
+import in.codifi.ambalal.error.utility.ErrorCodeConstants;
+import in.codifi.ambalal.error.utility.ErrorHandling;
+import in.codifi.ambalal.error.utility.ErrorMessageConstants;
+import in.codifi.ambalal.error.utility.MessageConstants;
+import in.codifi.api.utilities.CommonMethods;
 import io.quarkus.scheduler.Scheduled;
 
 @ApplicationScoped
@@ -25,6 +26,12 @@ public class LogService implements ILogService {
 
 	@Inject
 	LogRepository repository;
+	
+	@Inject
+	ResponseModel responseModel;
+	
+	@Inject 
+	ErrorHandling errorHandling;
 
 	@Scheduled(cron = "0 0 1 ? * MON") // Run every Monday at 1:00 AM
 	public void checkRestAccessLogTableRun() {
@@ -47,7 +54,7 @@ public class LogService implements ILogService {
 	 */
 	@Override
 	public ResponseModel checkRestAccessLogTable() {
-		ResponseModel responseModel = new ResponseModel();
+		//ResponseModel responseModel = new ResponseModel();
 		try {
 			/** to get total number of table names from specific database **/
 			List<String> existingTable = repository.getExistingTables();
@@ -83,9 +90,9 @@ public class LogService implements ILogService {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-//			responseModel = errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
-//					ErrorCodeConstants.EKEC101, EkycConstants.INTERNAL_ERR, "checkRestAccessLogTable",
-//					EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
+			errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
+					ErrorCodeConstants.EC010, EkycConstants.INTERNAL_ERR, "checkRestAccessLogTable",
+					EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
 		}
 //		responseModel = commonMethods.constructFailedMsg(MessageConstants.FAILED);
 		return responseModel;
@@ -93,7 +100,7 @@ public class LogService implements ILogService {
 
 	@Override
 	public ResponseModel checkRestServiceAccessLogTable() {
-		ResponseModel responseModel = new ResponseModel();
+		//ResponseModel response_Model = new ResponseModel();
 		try {
 			/** to get total number of table names from specific database **/
 			List<String> existingTable = repository.getExistingTables();
@@ -128,16 +135,16 @@ public class LogService implements ILogService {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-//			responseModel = errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
-//					ErrorCodeConstants.EKEC101, EkycConstants.INTERNAL_ERR, "checkRestServiceAccessLogTable",
-//					EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
+			errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
+					ErrorCodeConstants.EC010, EkycConstants.INTERNAL_ERR, "checkRestServiceAccessLogTable",
+					EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
 		}
 		return responseModel;
 	}
 
 	@Override
 	public ResponseModel createErrorLogsTable() {
-		ResponseModel responseModel = new ResponseModel();
+		//ResponseModel responseModel = new ResponseModel();
 		try {
 			/** to get total number of table names from specific database **/
 			List<String> existingTable = repository.getExistingTables();
@@ -172,9 +179,9 @@ public class LogService implements ILogService {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-//			responseModel = errorHandling.handleErrors("", "/logs/createErrorLogsTable", MessageConstants.MODULE,
-//					ErrorCodeConstants.EKEC101, EkycConstants.INTERNAL_ERR, "createErrorLogsTable",
-//					EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_ERROR_LOG);
+			 errorHandling.handleErrors("", "/logs/createErrorLogsTable", MessageConstants.MODULE,
+					ErrorCodeConstants.EC010, EkycConstants.INTERNAL_ERR, "createErrorLogsTable",
+					EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_ERROR_LOG);
 		}
 //		responseModel = commonMethods.constructFailedMsg(MessageConstants.FAILED);
 		return responseModel;

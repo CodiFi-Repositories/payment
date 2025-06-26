@@ -8,12 +8,18 @@ import javax.ws.rs.core.Response;
 import org.json.simple.JSONObject;
 
 import in.codifi.ambalal.entity.PaymentTransactionEntity;
+import in.codifi.ambalal.error.utility.ErrorCodeConstants;
+import in.codifi.ambalal.error.utility.ErrorHandling;
+import in.codifi.ambalal.error.utility.ErrorMessageConstants;
+import in.codifi.ambalal.error.utility.MessageConstants;
 import in.codifi.ambalal.repository.AccessLogManager;
 import in.codifi.ambalal.repository.PaymentTransactionRepository;
 import in.codifi.ambalal.rest.service.GlobeRestService;
 import in.codifi.ambalal.rest.service.TechExcelService;
+import in.codifi.ambalal.model.ResponseModel;
 import in.codifi.ambalal.service.spec.BasePaymentService;
 import in.codifi.api.utilities.EkycConstants;
+import in.codifi.api.utilities.EkycEndpointConstants;
 
 @ApplicationScoped
 public class CustomPaymentService implements BasePaymentService {
@@ -24,6 +30,8 @@ public class CustomPaymentService implements BasePaymentService {
 	GlobeRestService globeRestService;
 	@Inject
 	TechExcelService techExcelService;
+	@Inject
+	ErrorHandling errorHandling;
 
 	@Inject
 	AccessLogManager accessLogManager;
@@ -160,6 +168,10 @@ public class CustomPaymentService implements BasePaymentService {
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			errorHandling.handleErrors("",
+					EkycEndpointConstants.RAZORPAY_PAYMENT, MessageConstants.MODULE, ErrorCodeConstants.EC007,
+					EkycConstants.INTERNAL_ERR, EkycConstants.RAZORPAY_PAYMENT, EkycConstants.PAYMENT_CLASS, e.getMessage(),
+					ErrorMessageConstants.RAZORPAY_PAYMENT);
 		}
 
 		return "ok";
@@ -222,6 +234,11 @@ public class CustomPaymentService implements BasePaymentService {
 			return Response.ok(savedEntity).build();
 		} catch (Exception e) {
 			e.printStackTrace();
+			errorHandling.handleErrors("",
+					EkycEndpointConstants.ATOM_PAYMENT, MessageConstants.MODULE, ErrorCodeConstants.EC008,
+					EkycConstants.INTERNAL_ERR, EkycConstants.ATOM_PAYMENT, EkycConstants.PAYMENT_CLASS, e.getMessage(),
+					ErrorMessageConstants.ATOM_PAYMENT);
+			
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Failed to update payment").build();
 		}
 	}
