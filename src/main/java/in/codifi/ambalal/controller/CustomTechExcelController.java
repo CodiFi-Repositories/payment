@@ -25,9 +25,9 @@ public class CustomTechExcelController implements BaseTechExcelController {
     }
 
     @Override
-    public TechLoginResponse processReceipt(String userId, String chekNo, Double amt, String bankAccouNo) {
+    public TechLoginResponse processReceipt(String userId, String chekNo, Double amt, String bankAccouNo, Long id) {
         try {
-        	return  techExcelService.updateTechExcel(userId, chekNo, amt, bankAccouNo);
+        	return  techExcelService.updateTechExcel(userId, chekNo, amt, bankAccouNo,id);
         } catch (Exception e) {
             e.printStackTrace();
         }

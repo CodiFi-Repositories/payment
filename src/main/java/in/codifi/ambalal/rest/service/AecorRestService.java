@@ -14,12 +14,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import in.codifi.ambalal.entity.CredentialKey;
 import in.codifi.ambalal.entity.RmsUpdateResponseEntity;
+import in.codifi.ambalal.error.utility.ErrorCodeConstants;
+import in.codifi.ambalal.error.utility.ErrorMessageConstants;
+import in.codifi.ambalal.error.utility.MessageConstants;
 import in.codifi.ambalal.repository.CredentialKeyRepositiory;
 import in.codifi.ambalal.repository.RmsUpdateResponseRepository;
 import in.codifi.ambalal.rms.model.AccessTokenRequest;
 import in.codifi.ambalal.rms.model.AccessTokenResponse;
 import in.codifi.ambalal.rms.model.RmsUpdateRequest;
 import in.codifi.ambalal.rms.model.RmsUpdateResponse;
+import in.codifi.api.utilities.EkycConstants;
+import in.codifi.api.utilities.EkycEndpointConstants;
+import in.codifi.ambalal.error.utility.ErrorHandling;
+import in.codifi.ambalal.model.ResponseModel;
 
 @ApplicationScoped
 public class AecorRestService {
@@ -31,8 +38,11 @@ public class AecorRestService {
 	CredentialKeyRepositiory credentialKeyRepositiory;
 	@Inject
 	RmsUpdateResponseRepository rmsUpdateResponseRepository;
-
+	@Inject
+	ErrorHandling errorHandling;
+	
 	public String getJwtToken() {
+		ResponseModel responseModel = new ResponseModel();
 		AccessTokenRequest tokenRequest = new AccessTokenRequest();
 		List<CredentialKey> credentialsList = credentialKeyRepositiory.findByType("rms");
 
@@ -56,6 +66,11 @@ public class AecorRestService {
 		} catch (JsonProcessingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		errorHandling.handleErrors("",
+					EkycEndpointConstants.RMS_UPDATE, MessageConstants.MODULE, ErrorCodeConstants.EC001,
+					EkycConstants.INTERNAL_ERR, EkycConstants.RMS_UPDATION, EkycConstants.RMS_CLASS, e.getMessage(),
+					ErrorMessageConstants.RMS_UPDATE);
+			
 		}
 		return response.getResult().getToken(); // assuming token is inside result
 	}

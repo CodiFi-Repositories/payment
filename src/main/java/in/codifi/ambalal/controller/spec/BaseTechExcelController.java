@@ -37,5 +37,5 @@ public interface BaseTechExcelController {
 	@Path("/updatestatus")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public TechLoginResponse  processReceipt(@QueryParam("userId")  String userId,@QueryParam("chekNo")  String chekNo,@QueryParam("amt")  Double amt,@QueryParam("bankAccouNo")  String bankAccouNo);
+	public TechLoginResponse  processReceipt(@QueryParam("userId")  String userId,@QueryParam("chekNo")  String chekNo,@QueryParam("amt")  Double amt,@QueryParam("bankAccouNo")  String bankAccouNo,@QueryParam("id")  Long id);
 }

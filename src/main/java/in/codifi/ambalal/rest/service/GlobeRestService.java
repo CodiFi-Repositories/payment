@@ -19,6 +19,10 @@ import in.codifi.ambalal.entity.AccessTokenRequest;
 import in.codifi.ambalal.entity.CredentialKey;
 import in.codifi.ambalal.entity.GlobeInquiryResponse;
 import in.codifi.ambalal.entity.PaymentTransactionEntity;
+import in.codifi.ambalal.error.utility.ErrorCodeConstants;
+import in.codifi.ambalal.error.utility.ErrorHandling;
+import in.codifi.ambalal.error.utility.ErrorMessageConstants;
+import in.codifi.ambalal.error.utility.MessageConstants;
 import in.codifi.ambalal.model.AccessTokenResponse;
 import in.codifi.ambalal.model.AllocationData;
 import in.codifi.ambalal.model.AllocationRequest;
@@ -31,6 +35,9 @@ import in.codifi.ambalal.repository.AccessLogManager;
 import in.codifi.ambalal.repository.CredentialKeyRepositiory;
 import in.codifi.ambalal.repository.GlobeInquiryResponseRepository;
 import in.codifi.ambalal.repository.PaymentTransactionRepository;
+import in.codifi.ambalal.model.ResponseModel;
+import in.codifi.api.utilities.EkycConstants;
+import in.codifi.api.utilities.EkycEndpointConstants;
 
 @ApplicationScoped
 public class GlobeRestService {
@@ -42,6 +49,8 @@ public class GlobeRestService {
 	@Inject
 	CredentialKeyRepositiory credentialKeyRepositiory;
 
+	@Inject
+	ErrorHandling errorHandling;
 	@Inject
 	GlobeInquiryResponseRepository responseRepository;
 	@Inject
@@ -58,6 +67,7 @@ public class GlobeRestService {
 	 * @throws Exception
 	 */
 	public AccessTokenResponse getaccessToken() {
+		ResponseModel responseModel = new ResponseModel();
 		AccessTokenResponse apiModel = null;
 		try {
 			List<CredentialKey> credentialsList = credentialKeyRepositiory.findByType("globe");
@@ -77,6 +87,10 @@ public class GlobeRestService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			errorHandling.handleErrors("",
+					EkycEndpointConstants.GLOBE_GET_TOKEN, MessageConstants.MODULE, ErrorCodeConstants.EC002,
+					EkycConstants.INTERNAL_ERR, EkycConstants.GLB_TOKEN, EkycConstants.GLB_CLASS, e.getMessage(),
+					ErrorMessageConstants.GLOBE_TOKEN);
 		}
 		return apiModel;
 	}
@@ -161,6 +175,10 @@ public class GlobeRestService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			errorHandling.handleErrors(clientId,
+					EkycEndpointConstants.GLOBE_UPDATE, MessageConstants.MODULE, ErrorCodeConstants.EC003,
+					EkycConstants.INTERNAL_ERR, EkycConstants.GLB_UPDATION, EkycConstants.GLB_CLASS, e.getMessage(),
+					ErrorMessageConstants.GLOBE_UPDATE);
 		}
 		return null;
 	}
@@ -175,6 +193,7 @@ public class GlobeRestService {
 	 */
 
 	public StatusInquiryResponse callStatusInquiry(String msgId) {
+		ResponseModel responseModel = new ResponseModel();
 		try {
 			AccessTokenResponse tokenResponse = getaccessToken();
 			if (tokenResponse != null && "Success".equalsIgnoreCase(tokenResponse.getStatus())) {
@@ -190,11 +209,16 @@ public class GlobeRestService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			errorHandling.handleErrors(msgId,
+					EkycEndpointConstants.GLOBE_INQUIRY, MessageConstants.MODULE, ErrorCodeConstants.EC004,
+					EkycConstants.INTERNAL_ERR, EkycConstants.GLB_INQUIRY, EkycConstants.GLB_CLASS, e.getMessage(),
+					ErrorMessageConstants.GLOBE_INQUIRY);
 		}
 		return null;
 	}
 
 	public void saveInquiryResponse(StatusInquiryResponse response, String msgId) {
+		ResponseModel responseModel = new ResponseModel();
 	    try {
 	        if (response != null && "Success".equalsIgnoreCase(response.getStatus()) && response.getData() != null) {
 	            for (InquiryResponse inquiry : response.getData().getInquiryResponse()) {
@@ -233,6 +257,10 @@ public class GlobeRestService {
 	        }
 	    } catch (Exception e) {
 	        e.printStackTrace();
+	    	errorHandling.handleErrors(msgId,
+					EkycEndpointConstants.GLOBE_INQUIRY, MessageConstants.MODULE, ErrorCodeConstants.EC004,
+					EkycConstants.INTERNAL_ERR, EkycConstants.GLB_INQUIRY, EkycConstants.GLB_CLASS, e.getMessage(),
+					ErrorMessageConstants.GLOBE_INQUIRY);
 	    }
 	}
 

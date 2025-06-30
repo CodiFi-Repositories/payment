@@ -23,7 +23,7 @@ public class CustomGlobeApiController implements BaseGlobeApiController {
 
 	@Override
 	public AllocationResponse updateCallAllocationApi(PaymentTransactionEntity paymentTransactionEntity) {
-		return globeRestService.callAllocationApi(paymentTransactionEntity.getClientCode(), paymentTransactionEntity.getAmount());
+		return globeRestService.callAllocationApi(paymentTransactionEntity.getClientCode(), paymentTransactionEntity.getAmount(),paymentTransactionEntity.getReferenceId(),paymentTransactionEntity.getId());
 	}
 
 	@Override

@@ -14,12 +14,20 @@ import javax.sql.DataSource;
 import in.codifi.ambalal.entity.logs.AccessLogModel;
 import in.codifi.ambalal.entity.logs.RestAccessLogModel;
 import io.quarkus.logging.Log;
+import in.codifi.ambalal.error.utility.ErrorCodeConstants;
+import in.codifi.ambalal.error.utility.ErrorHandling;
+import in.codifi.ambalal.error.utility.ErrorMessageConstants;
+import in.codifi.ambalal.error.utility.MessageConstants;
+import in.codifi.api.utilities.EkycConstants;
+import in.codifi.api.utilities.StringUtil;
 
 @ApplicationScoped
 public class AccessLogManager {
 	@Inject
 	@Named("logs")
 	DataSource dataSource;
+	@Inject
+	ErrorHandling errorHandling;
 	
 
 	/**
@@ -65,9 +73,9 @@ public class AccessLogManager {
 				connection.close();
 			} catch (Exception e) {
 				Log.error("Ekyc - insertAccessLog -" + e);
-//				errorHandling.handleErrors("", "", MessageConstants.MODULE, ErrorCodeConstants.EKEC097,
-//						EkycConstants.INTERNAL_ERR, "insertAccessLogsIntoDB", EkycConstants.ACCESSLOG_FILTER,
-//						e.getMessage(), ErrorMessageConstants.CAPTURE_IN_SINGLESHOT);
+				errorHandling.handleErrors("", "", MessageConstants.MODULE, ErrorCodeConstants.EC012,
+						EkycConstants.INTERNAL_ERR, "insertAccessLogsIntoDB", EkycConstants.ACCESSLOG_FILTER,
+						e.getMessage(), ErrorMessageConstants.CAPTURE_IN_SINGLESHOT);
 			} finally {
 				try {
 					if (statement != null) {
@@ -81,17 +89,17 @@ public class AccessLogManager {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-//					errorHandling.handleErrors("", "", MessageConstants.MODULE, ErrorCodeConstants.EKEC097,
-//							EkycConstants.INTERNAL_ERR, "insertAccessLogsIntoDB", EkycConstants.ACCESS_LOG_MANAGER,
-//							e.getMessage(), ErrorMessageConstants.CAPTURE_IN_SINGLESHOT);
+					errorHandling.handleErrors("", "", MessageConstants.MODULE, ErrorCodeConstants.EC012,
+							EkycConstants.INTERNAL_ERR, "insertAccessLogsIntoDB", EkycConstants.ACCESS_LOG_MANAGER,
+							e.getMessage(), ErrorMessageConstants.CAPTURE_IN_SINGLESHOT);
 				}
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-//			errorHandling.handleErrors("", "", MessageConstants.MODULE, ErrorCodeConstants.EKEC097,
-//					EkycConstants.INTERNAL_ERR, "insertAccessLogsIntoDB", EkycConstants.ACCESS_LOG_MANAGER,
-//					e.getMessage(), ErrorMessageConstants.CAPTURE_IN_SINGLESHOT);
+			errorHandling.handleErrors("", "", MessageConstants.MODULE, ErrorCodeConstants.EC012,
+					EkycConstants.INTERNAL_ERR, "insertAccessLogsIntoDB", EkycConstants.ACCESS_LOG_MANAGER,
+					e.getMessage(), ErrorMessageConstants.CAPTURE_IN_SINGLESHOT);
 		}
 	}
 
@@ -129,10 +137,10 @@ public class AccessLogManager {
 				connection.close();
 			} catch (Exception e) {
 				e.printStackTrace();
-//				errorHandling.handleErrors(StringUtil.isNotNullOrEmpty(applicationId) ? applicationId : "", "",
-//						MessageConstants.MODULE, ErrorCodeConstants.EKEC100, EkycConstants.INTERNAL_ERR,
-//						"insertRestAccessLogsIntoDB", EkycConstants.ACCESSLOG_FILTER, e.getMessage(),
-//						ErrorMessageConstants.SAVE_REST_LOG);
+				errorHandling.handleErrors(StringUtil.isNotNullOrEmpty(applicationId) ? applicationId : "", "",
+						MessageConstants.MODULE, ErrorCodeConstants.EC013, EkycConstants.INTERNAL_ERR,
+						"insertRestAccessLogsIntoDB", EkycConstants.ACCESSLOG_FILTER, e.getMessage(),
+						ErrorMessageConstants.SAVE_REST_LOG);
 			} finally {
 				try {
 					if (statement != null) {
@@ -146,19 +154,19 @@ public class AccessLogManager {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-//					errorHandling.handleErrors(StringUtil.isNotNullOrEmpty(applicationId) ? applicationId : "", "",
-//							MessageConstants.MODULE, ErrorCodeConstants.EKEC100, EkycConstants.INTERNAL_ERR,
-//							"insertRestAccessLogsIntoDB", EkycConstants.ACCESSLOG_FILTER, e.getMessage(),
-//							ErrorMessageConstants.SAVE_REST_LOG);
+					errorHandling.handleErrors(StringUtil.isNotNullOrEmpty(applicationId) ? applicationId : "", "",
+							MessageConstants.MODULE, ErrorCodeConstants.EC013, EkycConstants.INTERNAL_ERR,
+							"insertRestAccessLogsIntoDB", EkycConstants.ACCESSLOG_FILTER, e.getMessage(),
+							ErrorMessageConstants.SAVE_REST_LOG);
 				}
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-//			errorHandling.handleErrors(StringUtil.isNotNullOrEmpty(applicationId) ? applicationId : "", "",
-//					MessageConstants.MODULE, ErrorCodeConstants.EKEC100, EkycConstants.INTERNAL_ERR,
-//					"insertRestAccessLogsIntoDB", EkycConstants.ACCESSLOG_FILTER, e.getMessage(),
-//					ErrorMessageConstants.SAVE_REST_LOG);
+			errorHandling.handleErrors(StringUtil.isNotNullOrEmpty(applicationId) ? applicationId : "", "",
+					MessageConstants.MODULE, ErrorCodeConstants.EC013, EkycConstants.INTERNAL_ERR,
+					"insertRestAccessLogsIntoDB", EkycConstants.ACCESSLOG_FILTER, e.getMessage(),
+					ErrorMessageConstants.SAVE_REST_LOG);
 		}
 
 	}

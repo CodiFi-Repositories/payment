@@ -18,12 +18,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import in.codifi.ambalal.entity.CredentialKey;
 import in.codifi.ambalal.entity.PaymentTransactionEntity;
+import in.codifi.ambalal.error.utility.ErrorCodeConstants;
+import in.codifi.ambalal.error.utility.ErrorHandling;
+import in.codifi.ambalal.error.utility.ErrorMessageConstants;
+import in.codifi.ambalal.error.utility.MessageConstants;
 import in.codifi.ambalal.model.LoginRequest;
 import in.codifi.ambalal.model.TechLoginResponse;
 import in.codifi.ambalal.model.TechReceiptRequestModel;
 import in.codifi.ambalal.repository.AccessLogManager;
 import in.codifi.ambalal.repository.CredentialKeyRepositiory;
 import in.codifi.ambalal.repository.PaymentTransactionRepository;
+import in.codifi.ambalal.model.ResponseModel;
+import in.codifi.api.utilities.EkycConstants;
+import in.codifi.api.utilities.EkycEndpointConstants;
 
 @ApplicationScoped
 public class TechExcelService {
@@ -37,9 +44,12 @@ public class TechExcelService {
 	PaymentTransactionRepository paymentRepository;
 	@Inject
 	AccessLogManager accessLogManager;
+	@Inject
+	ErrorHandling errorHandling;
 
 	public String login() {
 		String response = null;
+		//ResponseModel responseModel = new ResponseModel();
 		try {
 			List<CredentialKey> credentialsList = credentialKeyRepositiory.findByType("techExcel");
 			Map<String, String> credentialsMap = new HashMap<>();
@@ -58,6 +68,10 @@ public class TechExcelService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			errorHandling.handleErrors("",
+					EkycEndpointConstants.TECHEXCEL_TOKEN, MessageConstants.MODULE, ErrorCodeConstants.EC005,
+					EkycConstants.INTERNAL_ERR, EkycConstants.TECHEXCEL_TOKEN, EkycConstants.TECHEXCEL_CLASS, e.getMessage(),
+					ErrorMessageConstants.TECHEXCEL_TOKEN);
 		}
 		return response;
 	}
@@ -117,6 +131,10 @@ public class TechExcelService {
 			return response;
 		} catch (Exception e) {
 			e.printStackTrace();
+			errorHandling.handleErrors(userId,
+					EkycEndpointConstants.TECHEXCEL_UPDATE, MessageConstants.MODULE, ErrorCodeConstants.EC006,
+					EkycConstants.INTERNAL_ERR, EkycConstants.TECHEXCEL_UPDATION, EkycConstants.TECHEXCEL_CLASS, e.getMessage(),
+					ErrorMessageConstants.TECHEXCEL_UPDATE);
 		}
 		return response;
 	}

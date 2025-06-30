@@ -5,6 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -125,6 +126,9 @@ public class PaymentTransactionEntity {
     
     @Column(name = "is_update_globe")
     private Boolean isUpdateGlobe;
+    
+    @Transient
+    private String referenceId;
     
     
     

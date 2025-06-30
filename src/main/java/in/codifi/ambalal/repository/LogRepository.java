@@ -20,13 +20,14 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.sql.DataSource;
 
-import com.mysql.cj.protocol.x.MessageConstants;
+//import com.mysql.cj.protocol.x.MessageConstants;
 
 import in.codifi.ambalal.config.ApplicationProperties;
 import in.codifi.api.utilities.EkycConstants;
-import in.codifi.kyc.error.utility.ErrorCodeConstants;
-import in.codifi.kyc.error.utility.ErrorHandling;
-import in.codifi.kyc.error.utility.ErrorMessageConstants;
+import in.codifi.ambalal.error.utility.ErrorCodeConstants;
+import in.codifi.ambalal.error.utility.ErrorHandling;
+import in.codifi.ambalal.error.utility.ErrorMessageConstants;
+import in.codifi.ambalal.error.utility.MessageConstants;
 
 @ApplicationScoped
 public class LogRepository {
@@ -34,6 +35,8 @@ public class LogRepository {
 	@Named("logs")
 	@Inject
 	DataSource dataSource;
+	@Inject
+	ErrorHandling errorHandling;
 	@Inject
 	ApplicationProperties properties;
 	
@@ -144,9 +147,9 @@ public class LogRepository {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-//			errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
-//					ErrorCodeConstants.EKEC168, EkycConstants.INTERNAL_ERR, "createRestTable", EkycConstants.LOG_REPO,
-//					e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
+			errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
+					ErrorCodeConstants.EC010, EkycConstants.INTERNAL_ERR, "createRestTable", EkycConstants.LOG_REPO,
+					e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
 		} finally {
 			try {
 				if (statement != null) {
@@ -157,9 +160,9 @@ public class LogRepository {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-//				errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
-//						ErrorCodeConstants.EKEC168, EkycConstants.INTERNAL_ERR, "createRestTable",
-//						EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
+				errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
+						ErrorCodeConstants.EC010, EkycConstants.INTERNAL_ERR, "createRestTable",
+						EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
 			}
 		}
 
@@ -216,9 +219,9 @@ public class LogRepository {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-//			errorHandling.handleErrors("", "/logs/Logtables", MessageConstants.MODULE, ErrorCodeConstants.EKEC168,
-//					EkycConstants.INTERNAL_ERR, "backUpExistingTables", EkycConstants.LOG_REPO, e.getMessage(),
-//					ErrorMessageConstants.CREATE_ACCESS_LOG);
+			errorHandling.handleErrors("", "/logs/Logtables", MessageConstants.MODULE, ErrorCodeConstants.EC010,
+					EkycConstants.INTERNAL_ERR, "backUpExistingTables", EkycConstants.LOG_REPO, e.getMessage(),
+					ErrorMessageConstants.CREATE_ACCESS_LOG);
 		} finally {
 			try {
 				if (statement != null) {
@@ -229,9 +232,9 @@ public class LogRepository {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-//				errorHandling.handleErrors("", "/logs/Logtables", MessageConstants.MODULE, ErrorCodeConstants.EKEC168,
-//						EkycConstants.INTERNAL_ERR, "backUpExistingTables", EkycConstants.LOG_REPO, e.getMessage(),
-//						ErrorMessageConstants.CREATE_ACCESS_LOG);
+				errorHandling.handleErrors("", "/logs/Logtables", MessageConstants.MODULE, ErrorCodeConstants.EC010,
+						EkycConstants.INTERNAL_ERR, "backUpExistingTables", EkycConstants.LOG_REPO, e.getMessage(),
+						ErrorMessageConstants.CREATE_ACCESS_LOG);
 			}
 		}
 	}
@@ -391,9 +394,9 @@ public class LogRepository {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-//			errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
-//					ErrorCodeConstants.EKEC168, EkycConstants.INTERNAL_ERR, "backUprestexitingTables",
-//					EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
+			errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
+					ErrorCodeConstants.EC010, EkycConstants.INTERNAL_ERR, "backUprestexitingTables",
+					EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
 		} finally {
 			try {
 				if (statement != null) {
@@ -404,9 +407,9 @@ public class LogRepository {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-//				errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
-//						ErrorCodeConstants.EKEC168, EkycConstants.INTERNAL_ERR, "backUprestexitingTables",
-//						EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
+				errorHandling.handleErrors("", "/logs/RestServiceLogtables", MessageConstants.MODULE,
+						ErrorCodeConstants.EC010, EkycConstants.INTERNAL_ERR, "backUprestexitingTables",
+						EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_REST_LOG);
 			}
 		}
 	}
@@ -430,9 +433,9 @@ public class LogRepository {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-//			errorHandling.handleErrors("", "/logs/createErrorLogsTable", MessageConstants.MODULE,
-//					ErrorCodeConstants.EKEC168, EkycConstants.INTERNAL_ERR, "createErrorTable", EkycConstants.LOG_REPO,
-//					e.getMessage(), ErrorMessageConstants.CREATE_ERROR_LOG);
+			errorHandling.handleErrors("", "/logs/createErrorLogsTable", MessageConstants.MODULE,
+					ErrorCodeConstants.EC010, EkycConstants.INTERNAL_ERR, "createErrorTable", EkycConstants.LOG_REPO,
+					e.getMessage(), ErrorMessageConstants.CREATE_ERROR_LOG);
 		} finally {
 			try {
 				if (statement != null) {
@@ -443,9 +446,9 @@ public class LogRepository {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-//				errorHandling.handleErrors("", "/logs/createErrorLogsTable", MessageConstants.MODULE,
-//						ErrorCodeConstants.EKEC168, EkycConstants.INTERNAL_ERR, "createErrorTable",
-//						EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_ERROR_LOG);
+			            errorHandling.handleErrors("", "/logs/createErrorLogsTable", MessageConstants.MODULE,
+						ErrorCodeConstants.EC010, EkycConstants.INTERNAL_ERR, "createErrorTable",
+						EkycConstants.LOG_REPO, e.getMessage(), ErrorMessageConstants.CREATE_ERROR_LOG);
 			}
 		}
 	}
