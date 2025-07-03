@@ -162,7 +162,7 @@ public class CustomPaymentService implements BasePaymentService {
 										techExcelService.updateTechExcel(responseEntity.getClientCode(),
 												responseEntity.getRazorpayRrn(),
 												responseEntity.getAmountPaid().doubleValue(),
-												responseEntity.getCustomerAccNo().toString(), responseEntity.getId());
+												responseEntity.getRazorpayAcountNumber().toString(), responseEntity.getId());
 									}
 								}
 
