@@ -62,7 +62,7 @@ public class TechExcelService {
 				req.setPassword(credentialsMap.getOrDefault("password", ""));
 				response = ItechExcelService.getAccessToken(req);
 				ObjectMapper obj = new ObjectMapper();
-				accessLogManager.insertRestAccessLogsIntoDB(null, "Globe", obj.writeValueAsString(response), "login",
+				accessLogManager.insertRestAccessLogsIntoDB(null, "techExcel-logIn", obj.writeValueAsString(response), "techExcel-Login",
 						"/techExcel/backofficeLogin");
 				System.out.println("the response" + response);
 			}
@@ -118,7 +118,7 @@ public class TechExcelService {
 			System.out.println("Sending authToken: " + authToken);
 
 			response = ItechExcelService.updateTechExcel(authToken, req);
-			accessLogManager.insertRestAccessLogsIntoDB(null, "Globe", obj.writeValueAsString(response),
+			accessLogManager.insertRestAccessLogsIntoDB(null, "techExcel", obj.writeValueAsString(response),
 					"updateTechExcel", "/techExcel/updatestatus");
 			if (response.getSuccess().equalsIgnoreCase("True")) {
 				Optional<PaymentTransactionEntity> paymentDT = paymentRepository.findById(id);

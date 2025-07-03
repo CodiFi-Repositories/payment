@@ -58,6 +58,9 @@ public class GlobeRestService {
 	@Inject
 	AccessLogManager accessLogManager;
 
+	@Inject
+	TechExcelService techExcelService;
+	
 	/**
 	 * Method to getAccess token
 	 * 
@@ -104,7 +107,7 @@ public class GlobeRestService {
 	 * @throws Exception
 	 */
 
-	public AllocationResponse callAllocationApi(String clientId, Double amount,String referenceNo, Long id) {
+	public AllocationResponse callAllocationApi(String clientId, Double amount,String referenceNo, Long id,String accNo) {
 		try {
 			AllocationResponse returnResponse=null;
 			AccessTokenResponse tokenResponse = getaccessToken();
@@ -170,6 +173,13 @@ public class GlobeRestService {
 						PaymentTransactionEntity res=paymentDT.get();
 						res.setIsUpdateGlobe(true);
 						paymentRepository.save(res);
+						
+//						if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
+							techExcelService.updateTechExcel(clientId,
+									referenceNo,
+									amount,
+									accNo,id);
+//						}
 					}
 				}
 			}
