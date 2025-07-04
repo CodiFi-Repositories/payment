@@ -158,12 +158,12 @@ public class CustomPaymentService implements BasePaymentService {
 										System.out.println("the razorpay globe is done");
 									}
 
-									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
-										techExcelService.updateTechExcel(responseEntity.getClientCode(),
-												responseEntity.getRazorpayRrn(),
-												responseEntity.getAmountPaid().doubleValue(),
-												responseEntity.getRazorpayAcountNumber().toString(), responseEntity.getId());
-									}
+//									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
+//										techExcelService.updateTechExcel(responseEntity.getClientCode(),
+//												responseEntity.getRazorpayRrn(),
+//												responseEntity.getAmountPaid().doubleValue(),
+//												responseEntity.getRazorpayAcountNumber().toString(), responseEntity.getId());
+//									}
 								}
 
 							}
