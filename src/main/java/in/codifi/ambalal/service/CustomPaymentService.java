@@ -16,7 +16,6 @@ import in.codifi.ambalal.repository.AccessLogManager;
 import in.codifi.ambalal.repository.PaymentTransactionRepository;
 import in.codifi.ambalal.rest.service.GlobeRestService;
 import in.codifi.ambalal.rest.service.TechExcelService;
-import in.codifi.ambalal.model.ResponseModel;
 import in.codifi.ambalal.service.spec.BasePaymentService;
 import in.codifi.api.utilities.EkycConstants;
 import in.codifi.api.utilities.EkycEndpointConstants;
@@ -146,7 +145,9 @@ public class CustomPaymentService implements BasePaymentService {
 								}
 
 								responseEntity = paymentRepository.save(paymentDT);
-								if (responseEntity != null && "captured".equalsIgnoreCase(status)&& clientCode.equalsIgnoreCase("8100056")) {
+								if (responseEntity != null && "captured".equalsIgnoreCase(status)
+										&& (clientCode.equalsIgnoreCase("8100056")
+												|| clientCode.equalsIgnoreCase("8100033")|| clientCode.equalsIgnoreCase("2000111")||clientCode.equalsIgnoreCase("1000444"))) {
 
 									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateGlobe())) {
 										System.out.println("the razorpay globe is running");
@@ -154,7 +155,7 @@ public class CustomPaymentService implements BasePaymentService {
 												responseEntity.getAmountPaid().doubleValue(), // safer than casting
 												responseEntity.getRazorpayRrn(), responseEntity.getId(),
 												responseEntity.getRazorpayAcountNumber().toString());
-										
+
 										System.out.println("the razorpay globe is done");
 									}
 
@@ -230,12 +231,13 @@ public class CustomPaymentService implements BasePaymentService {
 			paymentEntity.setCustomerAccNo(customerAccNo);
 			paymentEntity.setIsAtom(true);
 			PaymentTransactionEntity savedEntity = paymentRepository.save(paymentEntity);
-			if (savedEntity != null && "SUCCESS".equalsIgnoreCase(status) && clientCode.equalsIgnoreCase("8100056")) {
+			if (savedEntity != null && "SUCCESS".equalsIgnoreCase(status)
+					&& (clientCode.equalsIgnoreCase("8100056") || clientCode.equalsIgnoreCase("8100033"))) {
 				System.out.println("the atom globe is runnign");
 				if (!Boolean.TRUE.equals(savedEntity.getIsUpdateGlobe())) {
 					globeRestService.callAllocationApi(clientCode, savedEntity.getAmount(), // safer than casting
 							savedEntity.getAtomTxnId(), savedEntity.getId(), customerAccNo);
-					
+
 					System.out.println("the atom globe is done");
 				}
 			}
