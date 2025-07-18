@@ -62,10 +62,10 @@ public class StoreErrorLogs {
 			statement.executeUpdate();
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			errorHandling.handleErrors("", "", MessageConstants.MODULE, ErrorCodeConstants.EC014,
-					EkycConstants.INTERNAL_ERR, "createErrorLogsTable", EkycConstants.STORE_ERROR_LOG, e.getMessage(),
-					ErrorMessageConstants.STORE_ERROR_LOG);
+			//e.printStackTrace();
+			//errorHandling.handleErrors("", "", MessageConstants.MODULE, ErrorCodeConstants.EC014,
+			//		EkycConstants.INTERNAL_ERR, "createErrorLogsTable", EkycConstants.STORE_ERROR_LOG, e.getMessage(),
+			//		ErrorMessageConstants.STORE_ERROR_LOG);
 		} finally {
 			// Close resources in the finally block
 			try {

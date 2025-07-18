@@ -18,4 +18,8 @@ public class ApplicationProperties {
 	@ConfigProperty(name = "appconfig.file.basepath")
 	String fileBasePath;
 	
+	// token
+		@ConfigProperty(name = "appconfig.token.encryption.key")
+		String tokenEncryptKey;
+	
 }

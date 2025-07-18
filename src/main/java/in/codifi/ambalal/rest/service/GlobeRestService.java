@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import in.codifi.ambalal.entity.KraKeyValueEntity;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -38,6 +39,8 @@ import in.codifi.ambalal.repository.PaymentTransactionRepository;
 import in.codifi.ambalal.model.ResponseModel;
 import in.codifi.api.utilities.EkycConstants;
 import in.codifi.api.utilities.EkycEndpointConstants;
+import in.codifi.ambalal.repository.KraKeyValueRepository;
+
 
 @ApplicationScoped
 public class GlobeRestService {
@@ -57,6 +60,9 @@ public class GlobeRestService {
 	PaymentTransactionRepository paymentRepository;
 	@Inject
 	AccessLogManager accessLogManager;
+	
+	@Inject
+	KraKeyValueRepository kraKeyValueRepository;
 
 	/**
 	 * Method to getAccess token
@@ -70,6 +76,22 @@ public class GlobeRestService {
 		ResponseModel responseModel = new ResponseModel();
 		AccessTokenResponse apiModel = null;
 		try {
+			// Fetch configuration from DB
+	        List<KraKeyValueEntity> kraKeyValues = kraKeyValueRepository.findByMasterIdAndMasterName("01", "Payments");
+
+	        // Check if Globe feature is enabled via data_key = 'Globe' and data_value = '1'
+	        boolean isGlobeAllowed = kraKeyValues.stream()
+	        	    .anyMatch(k -> "Globe".equalsIgnoreCase(k.getKraKey()) && k.getKraValue());
+
+	        if (!isGlobeAllowed) {
+	        	apiModel.setStat(EkycConstants.FAILED_STATUS);
+	        	apiModel.setMessage(EkycConstants.GLOBE_FALSE);
+	        	apiModel.setErrorCode(ErrorCodeConstants.EC017);
+	        	apiModel.setReason(EkycConstants.GLOBE_NOT_USED);
+	            return apiModel;
+	        }
+
+			
 			List<CredentialKey> credentialsList = credentialKeyRepositiory.findByType("globe");
 			if (credentialsList != null && !credentialsList.isEmpty()) {
 				for (CredentialKey credential : credentialsList) {

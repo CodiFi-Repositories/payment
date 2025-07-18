@@ -108,7 +108,7 @@ public class PaymentTransactionEntity {
     private String razorpayCurrency;
 
     @Column(name = "razorpayCreatedAtEpoch")
-    private Long razorpayCreatedAtEpoch;
+    private String razorpayCreatedAtEpoch;
 
     @Column(name = "razorpayWebhookEvent")
     private String razorpayWebhookEvent;

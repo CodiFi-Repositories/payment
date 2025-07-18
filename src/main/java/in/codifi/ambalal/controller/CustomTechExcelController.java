@@ -13,11 +13,7 @@ public class CustomTechExcelController implements BaseTechExcelController {
     @Inject
     TechExcelService techExcelService;
 
-   
-
-
-    
-    
+  
     @Override
     public String login() {
         return  techExcelService.login();
