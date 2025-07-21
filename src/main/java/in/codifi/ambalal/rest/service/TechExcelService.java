@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import in.codifi.ambalal.entity.CredentialKey;
+import in.codifi.ambalal.entity.KraKeyValueEntity;
 import in.codifi.ambalal.entity.PaymentTransactionEntity;
 import in.codifi.ambalal.error.utility.ErrorCodeConstants;
 import in.codifi.ambalal.error.utility.ErrorHandling;
@@ -27,6 +28,7 @@ import in.codifi.ambalal.model.TechLoginResponse;
 import in.codifi.ambalal.model.TechReceiptRequestModel;
 import in.codifi.ambalal.repository.AccessLogManager;
 import in.codifi.ambalal.repository.CredentialKeyRepositiory;
+import in.codifi.ambalal.repository.KraKeyValueRepository;
 import in.codifi.ambalal.repository.PaymentTransactionRepository;
 import in.codifi.ambalal.model.ResponseModel;
 import in.codifi.api.utilities.EkycConstants;
@@ -46,11 +48,31 @@ public class TechExcelService {
 	AccessLogManager accessLogManager;
 	@Inject
 	ErrorHandling errorHandling;
+	@Inject
+	KraKeyValueRepository kraKeyValueRepository;
+
 
 	public String login() {
 		String response = null;
-		//ResponseModel responseModel = new ResponseModel();
+		ResponseModel responseModel = null;
 		try {
+			
+			List<KraKeyValueEntity> kraKeyValues = kraKeyValueRepository.findByMasterIdAndMasterName("01", "Payments");
+
+	        boolean isTechExcelAllowed = kraKeyValues.stream()
+	            .anyMatch(k -> "TechExcel".equalsIgnoreCase(k.getKraKey()) && k.getKraValue());
+
+	        if (!isTechExcelAllowed) {
+	        	//ResponseModel responseModel = new responseModel();
+	            responseModel.setStat(EkycConstants.FAILED_STATUS);
+	            responseModel.setMessage(EkycConstants.TECHEXCEL_FALSE);
+	            responseModel.setErrorCode(ErrorCodeConstants.EC026); // Specific to TechExcel config
+	            responseModel.setReason(EkycConstants.TECHEXCEL_NOT_USED);
+	            
+	            System.out.println("THE TECH EXCEL VALUE IS 0");
+	            return null; // or return ""; based on your flow
+	        }
+			
 			List<CredentialKey> credentialsList = credentialKeyRepositiory.findByType("techExcel");
 			Map<String, String> credentialsMap = new HashMap<>();
 			for (CredentialKey credential : credentialsList) {

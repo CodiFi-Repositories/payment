@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class AccessTokenResponse {
+public class AccessTokenResponse extends ResponseModel{
 
 	   @JsonProperty("Status")
 	    private String status;

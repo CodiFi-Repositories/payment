@@ -1,8 +1,13 @@
 package in.codifi.api.utilities;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -13,9 +18,11 @@ import in.codifi.api.utilities.EkycConstants;
 import in.codifi.ambalal.error.utility.ErrorHandling;
 import in.codifi.ambalal.repository.EmailLogRepository;
 import in.codifi.ambalal.repository.EmailTemplateRepository;
+import in.codifi.api.cache.HazleCacheController;
 //import in.codifi.ambalal.repository.MessageTemplateRepository;
 import in.codifi.api.utilities.CommonMail;
 import in.codifi.api.utilities.StoreErrorLogs;
+import in.codifi.ambalal.config.ApplicationProperties;
 import in.codifi.ambalal.entity.EmailLogEntity;
 import in.codifi.ambalal.error.utility.ErrorCodeConstants;
 import in.codifi.ambalal.error.utility.ErrorMessageConstants;
@@ -23,6 +30,8 @@ import in.codifi.ambalal.error.utility.MessageConstants;
 
 @ApplicationScoped
 public class CommonMethods {
+	
+	private static final String ALPHA_NUMERIC_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	
 	@Inject
 	StoreErrorLogs storeErrorLogs;
@@ -34,7 +43,70 @@ public class CommonMethods {
 	EmailTemplateRepository emailTemplateRepository;
 	@Inject
 	EmailLogRepository emailLogRepository;
+	@Inject
+	ApplicationProperties props;
 	
+	
+	//AUTH TOKEN
+	
+	/**
+	 * Method to create bearer token
+	 * 
+	 * @author prade
+	 * @return
+	 */
+	public String randomAlphaNumeric(String concatValues) {
+		int count = 256;
+		StringBuilder builder = new StringBuilder();
+		while (count-- != 0) {
+			int character = (int) (Math.random() * ALPHA_NUMERIC_STRING.length());
+			builder.append(ALPHA_NUMERIC_STRING.charAt(character));
+		}
+		builder.append(" ");
+		builder.append(encrypt(concatValues));
+		return builder.toString();
+	}
+
+	public String generateAuthToken(String emailID, String pswd) {
+		String authToken = null;
+		String concatMobileId = emailID + "_" + pswd;
+		authToken = randomAlphaNumeric(concatMobileId);
+		HazleCacheController.getInstance().getAuthToken().put(concatMobileId, authToken, 1800, TimeUnit.SECONDS);
+		// userEntity.getData().setAuthToken(authToken);
+		return authToken;
+	}
+
+	public String encrypt(String value) {
+		byte[] ivbuf = new byte[16];
+		String output = null;
+		try {
+			IvParameterSpec iv = new IvParameterSpec(ivbuf);
+			SecretKeySpec skeySpec = new SecretKeySpec(props.getTokenEncryptKey().getBytes("UTF-8"), "AES");
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+			byte[] encrypted = cipher.doFinal(value.getBytes());
+			output = Base64.getEncoder().encodeToString(encrypted);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return output;
+	}
+
+	public String decrypt(String encrypted) {
+		byte[] ivbuf = new byte[16];
+		try {
+			IvParameterSpec iv = new IvParameterSpec(ivbuf);
+			SecretKeySpec skeySpec = new SecretKeySpec(props.getTokenEncryptKey().getBytes("UTF-8"), "AES");
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+			byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+			return new String(original);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+
 	
 	
 	
@@ -45,6 +117,8 @@ public class CommonMethods {
 	 * @param failesMessage
 	 * @return
 	 */
+	
+	
 	public ResponseModel constructFailedMsg(String pFailesMessage) {
 		ResponseModel model = new ResponseModel();
 		model.setStat(EkycConstants.FAILED_STATUS);
@@ -105,6 +179,7 @@ public class CommonMethods {
 				}
 			}
 			commonMail.sendMail(toAdd, subject, body);
+
 		}
 	}
 	

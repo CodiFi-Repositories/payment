@@ -1,5 +1,7 @@
 package in.codifi.ambalal.service.spec;
 
+import java.util.List;
+
 import in.codifi.ambalal.model.ResponseModel;
 
 public interface ILogService {
@@ -24,4 +26,14 @@ public interface ILogService {
 	 * @return
 	 */
 	ResponseModel createErrorLogsTable();
+	
+	/**
+	 * method to send error mail
+	 *@author 
+	 * @return
+	 */
+ //   String sendMails(List<String> mailIds, String subject, String message);
+
+	
+	
 }

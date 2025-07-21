@@ -13,11 +13,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import in.codifi.ambalal.entity.CredentialKey;
+import in.codifi.ambalal.entity.KraKeyValueEntity;
 import in.codifi.ambalal.entity.RmsUpdateResponseEntity;
 import in.codifi.ambalal.error.utility.ErrorCodeConstants;
 import in.codifi.ambalal.error.utility.ErrorMessageConstants;
 import in.codifi.ambalal.error.utility.MessageConstants;
 import in.codifi.ambalal.repository.CredentialKeyRepositiory;
+import in.codifi.ambalal.repository.KraKeyValueRepository;
 import in.codifi.ambalal.repository.RmsUpdateResponseRepository;
 import in.codifi.ambalal.rms.model.AccessTokenRequest;
 import in.codifi.ambalal.rms.model.AccessTokenResponse;
@@ -37,42 +39,71 @@ public class AecorRestService {
 	@Inject
 	CredentialKeyRepositiory credentialKeyRepositiory;
 	@Inject
+	KraKeyValueRepository kraKeyValueRepository;
+
+	@Inject
 	RmsUpdateResponseRepository rmsUpdateResponseRepository;
 	@Inject
 	ErrorHandling errorHandling;
 	
 	public String getJwtToken() {
-		ResponseModel responseModel = new ResponseModel();
-		AccessTokenRequest tokenRequest = new AccessTokenRequest();
-		List<CredentialKey> credentialsList = credentialKeyRepositiory.findByType("rms");
+	    ResponseModel responseModel = null;
+	    AccessTokenRequest tokenRequest = new AccessTokenRequest();
 
-		Map<String, String> credentialsMap = new HashMap<>();
-		for (CredentialKey credential : credentialsList) {
-			credentialsMap.put(credential.getKey(), credential.getValue());
-		}
+	    try {
+	        // Step 1: Check if RMS is allowed via admin config
+	        List<KraKeyValueEntity> kraKeyValues = kraKeyValueRepository.findByMasterIdAndMasterName("01", "Payments");
 
-		// Example: Get specific keys
-		String loginId = credentialsMap.get("LoginId"); // or use "userID"
-		String password = credentialsMap.get("Password");
+	        boolean isRmsAllowed = kraKeyValues.stream()
+	            .anyMatch(k -> "RMS".equalsIgnoreCase(k.getKraKey()) && Boolean.TRUE.equals(k.getKraValue()));
 
-		tokenRequest.setUserID(loginId);
-		tokenRequest.setPassword(password);
+	        if (!isRmsAllowed) {
+	            responseModel = new ResponseModel();
+	            responseModel.setStat(EkycConstants.FAILED_STATUS);
+	            responseModel.setMessage(EkycConstants.RMS_FALSE);
+	            responseModel.setErrorCode(ErrorCodeConstants.EC025); // Specific to RMS config
+	            responseModel.setReason(EkycConstants.RMS_NOT_USED);
+	            return null; // or return ""; or throw a custom exception if needed
+	        }
 
-		AccessTokenResponse response = aecorRestService.login(tokenRequest);
-		ObjectMapper obj=new ObjectMapper();
-		
-		try {
-			System.out.println("the response"+obj.writeValueAsString(response));
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		errorHandling.handleErrors("",
-					EkycEndpointConstants.RMS_UPDATE, MessageConstants.MODULE, ErrorCodeConstants.EC001,
-					EkycConstants.INTERNAL_ERR, EkycConstants.RMS_UPDATION, EkycConstants.RMS_CLASS, e.getMessage(),
-					ErrorMessageConstants.RMS_UPDATE);
-			
-		}
-		return response.getResult().getToken(); // assuming token is inside result
+	        // Step 2: Fetch credentials for RMS login
+	        List<CredentialKey> credentialsList = credentialKeyRepositiory.findByType("rms");
+
+	        Map<String, String> credentialsMap = new HashMap<>();
+	        for (CredentialKey credential : credentialsList) {
+	            credentialsMap.put(credential.getKey(), credential.getValue());
+	        }
+
+	        String loginId = credentialsMap.get("LoginId");
+	        String password = credentialsMap.get("Password");
+
+	        tokenRequest.setUserID(loginId);
+	        tokenRequest.setPassword(password);
+
+	        // Step 3: Perform login via REST service
+	        AccessTokenResponse response = aecorRestService.login(tokenRequest);
+
+	        // Step 4: Log the response
+	        ObjectMapper obj = new ObjectMapper();
+	        try {
+	            System.out.println("The response: " + obj.writeValueAsString(response));
+	        } catch (JsonProcessingException e) {
+	            e.printStackTrace();
+	            errorHandling.handleErrors("",
+	                EkycEndpointConstants.RMS_UPDATE, MessageConstants.MODULE, ErrorCodeConstants.EC001,
+	                EkycConstants.INTERNAL_ERR, EkycConstants.RMS_UPDATION, EkycConstants.RMS_CLASS, e.getMessage(),
+	                ErrorMessageConstants.RMS_UPDATE);
+	        }
+
+	        return response.getResult().getToken(); // assuming getResult() is not null and contains token
+	    } catch (Exception ex) {
+	        ex.printStackTrace();
+	        errorHandling.handleErrors("",
+	            EkycEndpointConstants.RMS_UPDATE, MessageConstants.MODULE, ErrorCodeConstants.EC001,
+	            EkycConstants.INTERNAL_ERR, EkycConstants.RMS_UPDATION, EkycConstants.RMS_CLASS, ex.getMessage(),
+	            ErrorMessageConstants.RMS_UPDATE);
+	        return null;
+	    }
 	}
 
 	public RmsUpdateResponse updateRmsLimitFields(String clientId, Double amount) {

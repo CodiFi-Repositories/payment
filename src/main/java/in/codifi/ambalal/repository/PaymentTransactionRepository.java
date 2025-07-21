@@ -1,5 +1,7 @@
 package in.codifi.ambalal.repository;
 
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 
 import in.codifi.ambalal.entity.PaymentTransactionEntity;
@@ -9,5 +11,13 @@ public interface PaymentTransactionRepository  extends CrudRepository<PaymentTra
 	PaymentTransactionEntity findByClientCodeAndRazorpayPaymentId(String clientCode, String razorpayPaymentId);
 	
 	PaymentTransactionEntity findByClientCodeAndTxnId(String clientCode, String txnId);
+	
+	// Search for Atom entries
+	List<PaymentTransactionEntity> findByTxnDateContaining(String date);
+
+	// Search for Razorpay entries
+	List<PaymentTransactionEntity> findByRazorpayCreatedAtEpochContaining(String date);
+
+	
 
 }

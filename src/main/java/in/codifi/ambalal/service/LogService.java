@@ -18,6 +18,7 @@ import in.codifi.ambalal.error.utility.ErrorCodeConstants;
 import in.codifi.ambalal.error.utility.ErrorHandling;
 import in.codifi.ambalal.error.utility.ErrorMessageConstants;
 import in.codifi.ambalal.error.utility.MessageConstants;
+import in.codifi.api.utilities.CommonMail;
 import in.codifi.api.utilities.CommonMethods;
 import io.quarkus.scheduler.Scheduled;
 
@@ -26,6 +27,8 @@ public class LogService implements ILogService {
 
 	@Inject
 	LogRepository repository;
+	@Inject
+	CommonMail commonMail;
 	
 	@Inject
 	ResponseModel responseModel;
@@ -186,5 +189,12 @@ public class LogService implements ILogService {
 //		responseModel = commonMethods.constructFailedMsg(MessageConstants.FAILED);
 		return responseModel;
 	}
+	
 
+
+//	@Override
+//    public String sendMails(List<String> mailIds, String subject, String message) {
+//        return commonMail.sendMail(mailIds, subject, message, false);
+//    }
+	
 }

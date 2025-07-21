@@ -8,7 +8,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 @Setter
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -19,12 +21,19 @@ public class ResponseModel implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	private int stat;
+	//private String status;
 	private String page;
 	private String message;
 	private String errorCode;
 	private String reason;
 	private Object result;
+	private String token;
+
+	
 	private Object Address_response;
 	private Object rejectionUser;
+	
+	private String authToken;
+
 
 }

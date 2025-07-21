@@ -22,7 +22,20 @@ public class ErrorMessageConstants {
 	public static final String RAZORPAY_PAYMENT= "We are having trouble in updating razorpay payment. Please try again after sometime.";
 	public static final String ATOM_PAYMENT= "We are having trouble in updating atom payment. Please try again after sometime.";
 
+//Admin  
+	
+	public static final String FETCH_FAILED_TRANSACTIONS= "We are having trouble in updating the failed transaction details. Please try again after sometime.";
+	public static final String NO_MATCHED_TRANSACTIONS= "We couldn't find any matching transaction details for the given data. Please try again after sometime.";
+	public static final String DOWNLOAD_PAYMENT_STATUS="We are having trouble in downloading the payment status. Please try again after sometime.";
+	
+	public static final String ADMIN_LOGIN_FAILED_MESSAGE = "We are having trouble logging in. Please check your credentials or try again later.";
+	public static final String SAVE_ADMIN_CONTROLS_FAILED_MESSAGE = "Unable to save control data in DB. Please try again shortly.";
+	public static final String FETCH_ADMIN_CONTROLS_FAILED_MESSAGE = "Unable to fetch admin control data right now. Please try again later.";
+	public static final String CREATE_ADMIN_FAILED_MESSAGE = "We are unable to create the admin user currently. Please try again after some time.";
+	public static final String UPDATE_ADMIN_CONTROLS_FAILED_MESSAGE = "Unable to update admin control data right now. Please try again later.";
 
+
+	
 	public static final String SEND_MAIL = "We are having trouble sending email. Please try again after sometime.";
 }
 
