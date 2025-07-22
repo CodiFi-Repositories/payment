@@ -1,44 +1,34 @@
 package in.codifi.ambalal.service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.ws.rs.core.Response;
+
 import in.codifi.ambalal.entity.PaymentTransactionEntity;
 import in.codifi.ambalal.error.utility.ErrorCodeConstants;
 import in.codifi.ambalal.error.utility.ErrorHandling;
 import in.codifi.ambalal.error.utility.ErrorMessageConstants;
 import in.codifi.ambalal.error.utility.MessageConstants;
+import in.codifi.ambalal.model.PaymentStatusRequest;
+import in.codifi.ambalal.model.PaymentStatusResponse;
+import in.codifi.ambalal.model.ResponseModel;
 import in.codifi.ambalal.model.StatusResponse;
 import in.codifi.ambalal.repository.PaymentTransactionRepository;
 import in.codifi.ambalal.service.spec.BaseAdminService;
-import in.codifi.api.utilities.EkycConstants;
 import in.codifi.api.utilities.CommonMethods;
-
+import in.codifi.api.utilities.EkycConstants;
 import in.codifi.api.utilities.EkycEndpointConstants;
-import in.codifi.ambalal.model.ResponseModel;
-import in.codifi.ambalal.model.PaymentStatusResponse;
-import in.codifi.ambalal.model.PaymentStatusRequest;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.ws.rs.core.Response;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 
 @ApplicationScoped
 public class CustomAdminService implements BaseAdminService {

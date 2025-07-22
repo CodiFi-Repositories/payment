@@ -18,6 +18,15 @@ import in.codifi.ambalal.model.StatusInquiryResponse;
 public interface BaseGlobeApiController {
 
 	
+	/**
+	 * 
+	 *getToken 
+	 *
+	 * 23-June-2025
+	 * 
+	 * @author Vennila
+	 */
+    
 	
 	@Path("/getToken")
     @GET
@@ -42,6 +51,17 @@ public interface BaseGlobeApiController {
 	@Consumes(MediaType.APPLICATION_JSON)
     public  AllocationResponse updateCallAllocationApi(@RequestBody PaymentTransactionEntity paymentTransactionEntity);
 
+    
+    /**
+	 * 
+	 *CallStatusInquiry
+	 *
+	 * 23-June-2025
+	 * 
+	 * @author Vennila
+	 */
+    
+    
 
     @Path("/CallStatusInquiry")
 	@GET

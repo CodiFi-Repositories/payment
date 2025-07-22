@@ -1,19 +1,18 @@
 package in.codifi.ambalal.service;
- 
+
 import javax.enterprise.context.ApplicationScoped;
- 
+
 import javax.inject.Inject;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
- 
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
- 
- 
+
 import org.json.simple.JSONObject;
- 
+
 import in.codifi.ambalal.entity.PaymentTransactionEntity;
 import in.codifi.ambalal.error.utility.ErrorCodeConstants;
 import in.codifi.ambalal.error.utility.ErrorHandling;
@@ -26,10 +25,10 @@ import in.codifi.ambalal.rest.service.TechExcelService;
 import in.codifi.ambalal.service.spec.BasePaymentService;
 import in.codifi.api.utilities.EkycConstants;
 import in.codifi.api.utilities.EkycEndpointConstants;
- 
+
 @ApplicationScoped
 public class CustomPaymentService implements BasePaymentService {
- 
+
 	@Inject
 	PaymentTransactionRepository paymentRepository;
 	@Inject
@@ -38,7 +37,7 @@ public class CustomPaymentService implements BasePaymentService {
 	TechExcelService techExcelService;
 	@Inject
 	ErrorHandling errorHandling;
- 
+
 	@Inject
 	AccessLogManager accessLogManager;
 
@@ -159,24 +158,24 @@ public class CustomPaymentService implements BasePaymentService {
  
 								responseEntity = paymentRepository.save(paymentDT);
 
-									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateGlobe())) {
-										System.out.println("the razorpay globe is running");
-										globeRestService.callAllocationApi(clientCode,
-												responseEntity.getAmountPaid().doubleValue(), // safer than casting
-
-												responseEntity.getRazorpayRrn(), responseEntity.getId(),
-												responseEntity.getRazorpayAcountNumber().toString());
-
-										System.out.println("the razorpay globe is done");
-												responseEntity.getRazorpayRrn(), responseEntity.getId());
-									}
- 
-									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
-										techExcelService.updateTechExcel(responseEntity.getClientCode(),
-												responseEntity.getRazorpayRrn(),
-												responseEntity.getAmountPaid().doubleValue(),
-												responseEntity.getRazorpayAcountNumber().toString(), responseEntity.getId());
-									}
+//									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateGlobe())) {
+//										System.out.println("the razorpay globe is running");
+//										globeRestService.callAllocationApi(clientCode,
+//												responseEntity.getAmountPaid().doubleValue(), // safer than casting
+//
+//												responseEntity.getRazorpayRrn(), responseEntity.getId(),
+//												responseEntity.getRazorpayAcountNumber().toString());
+////
+////										System.out.println("the razorpay globe is done");
+////												responseEntity.getRazorpayRrn()+"and"+ responseEntity.getId());
+//									}
+// 
+//									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
+//										techExcelService.updateTechExcel(responseEntity.getClientCode(),
+//												responseEntity.getRazorpayRrn(),
+//												responseEntity.getAmountPaid().doubleValue(),
+//												responseEntity.getRazorpayAcountNumber().toString(), responseEntity.getId());
+//									}
 
 //									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
 //										techExcelService.updateTechExcel(responseEntity.getClientCode(),
@@ -184,7 +183,7 @@ public class CustomPaymentService implements BasePaymentService {
 //												responseEntity.getAmountPaid().doubleValue(),
 //												responseEntity.getRazorpayAcountNumber().toString(), responseEntity.getId());
 //									}
-								}
+								
  
 							}
 						}
@@ -192,16 +191,19 @@ public class CustomPaymentService implements BasePaymentService {
 				}
 			}
  
-		} catch (Exception e) {
+		}catch(
+
+	Exception e)
+	{
 			e.printStackTrace();
 			errorHandling.handleErrors("", EkycEndpointConstants.RAZORPAY_PAYMENT, MessageConstants.MODULE,
 					ErrorCodeConstants.EC007, EkycConstants.INTERNAL_ERR, EkycConstants.RAZORPAY_PAYMENT,
 					EkycConstants.PAYMENT_CLASS, e.getMessage(), ErrorMessageConstants.RAZORPAY_PAYMENT);
 		}
- 
-		return "ok";
+
+	return"ok";
 	}
- 
+
 	@Override
 	public Response updateAtomPayment(MultivaluedMap<String, String> formParams) {
 		try {
@@ -270,5 +272,5 @@ public class CustomPaymentService implements BasePaymentService {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Failed to update payment").build();
 		}
 	}
- 
+
 }

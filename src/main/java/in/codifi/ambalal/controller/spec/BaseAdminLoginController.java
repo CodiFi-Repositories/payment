@@ -14,8 +14,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import in.codifi.ambalal.model.ResponseModel;
 import in.codifi.ambalal.model.AdminUserCreateRequest;
 
-
- 
 public interface BaseAdminLoginController {
 
 	/**
@@ -33,11 +31,11 @@ public interface BaseAdminLoginController {
 	@APIResponse(description = "Method to verify login")
 	public ResponseModel loginUser(@NotNull @QueryParam("emailID") String emailID,
 			@NotNull @QueryParam("password") String password);
-	
-	    @POST
-	    @Path("/create")
-	    @Consumes(MediaType.APPLICATION_JSON)
-	    @Produces(MediaType.APPLICATION_JSON)
-	    ResponseModel createAdminUser(AdminUserCreateRequest request);
+
+	@POST
+	@Path("/create")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	ResponseModel createAdminUser(AdminUserCreateRequest request);
 
 }
