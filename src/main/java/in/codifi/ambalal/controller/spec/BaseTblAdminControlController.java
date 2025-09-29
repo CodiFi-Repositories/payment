@@ -17,17 +17,17 @@ import javax.ws.rs.core.Response;
 
 public interface BaseTblAdminControlController {
 
-    @POST
-    @Path("/save")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    Response saveTblAdminControls(TblAdminControlRequest request);
+//    @POST
+//    @Path("/save")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    Response saveTblAdminControls(TblAdminControlRequest request);
     
-    @GET
-    @Path("/fetch")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    Response fetchTblAdminControls(TblAdminControlRequest request);
+//    @GET
+//    @Path("/fetch")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    Response fetchTblAdminControls(TblAdminControlRequest request);
 
 
   

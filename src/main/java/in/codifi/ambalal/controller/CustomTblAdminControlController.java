@@ -29,17 +29,17 @@ public class CustomTblAdminControlController implements BaseTblAdminControlContr
     @Inject
     ErrorHandling errorHandling;
 
-    @Override
-    public Response saveTblAdminControls(TblAdminControlRequest request) {
-        return Response.ok(AdminControlServicee.saveTblAdminControls(request)).build();
-    }
+//    @Override
+//    public Response saveTblAdminControls(TblAdminControlRequest request) {
+//        return Response.ok(AdminControlServicee.saveTblAdminControls(request)).build();
+//    }
 
-    
-    @Override
-    public Response fetchTblAdminControls(TblAdminControlRequest request) {
-        return Response.ok(AdminControlServicee.getAdminControlByUserId(request.getUserId())).build();
-    }
-    
+//    
+//    @Override
+//    public Response fetchTblAdminControls(TblAdminControlRequest request) {
+//        return Response.ok(AdminControlServicee.getAdminControlByUserId(request.getUserId())).build();
+//    }
+//    
     
     @Override
     public Response updateControl(List<AdminControlRequest> requestList) {

@@ -1,6 +1,8 @@
 package in.codifi.ambalal.rest.service;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +60,8 @@ public class GlobeRestService {
 	GlobeInquiryResponseRepository responseRepository;
 	@Inject
 	PaymentTransactionRepository paymentRepository;
+	
+	
 	@Inject
 	AccessLogManager accessLogManager;
 	
@@ -105,7 +109,7 @@ public class GlobeRestService {
 						apiModel = globeRestService.getAccessToken(request);
 						ObjectMapper obj = new ObjectMapper();
 						System.out.println("the apiModel object is " + obj.writeValueAsString(apiModel));
-						accessLogManager.insertRestAccessLogsIntoDB(null, "Globe", obj.writeValueAsString(apiModel), "getaccessToken", "/globe/getToken");
+						accessLogManager.insertRestAccessLogsIntoDB(null, obj.writeValueAsString(request), obj.writeValueAsString(apiModel), "getaccessToken", "/globe/getToken");
 						break; // stop after finding the matching key
 					}
 				}
@@ -133,6 +137,7 @@ public class GlobeRestService {
 		try {
 			AllocationResponse returnResponse=null;
 			AccessTokenResponse tokenResponse = getaccessToken();
+		
 			if (tokenResponse != null && "Success".equalsIgnoreCase(tokenResponse.getStatus())) {
 
 				// Fetch required credentials
@@ -144,12 +149,37 @@ public class GlobeRestService {
 
 				// Prepare allocation request
 				AllocationRequest allocation = new AllocationRequest();
+				
+				 LocalTime currentTime = LocalTime.now(ZoneId.of("Asia/Kolkata"));
+		            LocalTime startTime = LocalTime.of(9, 0);      // 9:00 AM
+		            LocalTime endTime = LocalTime.of(16, 0);      // 3:30 PM
+
+		            
+		            boolean withinTradingHours = !currentTime.isBefore(startTime) && !currentTime.isAfter(endTime);
+
+		            String segment = withinTradingHours ? "FO" : "CO";
+		            allocation.setSegment(segment);
+
+		            String action = withinTradingHours ? "U" : "A";
+		            allocation.setAction(action);
+
+		            // Set cmCode and tmCode based on timing
+		            String cmCode = withinTradingHours 
+		                    ? credentialsMap.getOrDefault("cmCode_FO", "")  // FO timing cmCode
+		                    : credentialsMap.getOrDefault("cmCode_CO", ""); // CO timing cmCode
+		            allocation.setCmCode(cmCode);
+
+		            String tmCode = withinTradingHours 
+		                    ? credentialsMap.getOrDefault("tmCode_FO", "00000")  // FO timing tmCode
+		                    : credentialsMap.getOrDefault("tmCode_CO", "00000"); // CO timing tmCode
+		            allocation.setTmCode(tmCode);
+				
 				String curDate = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH).format(new Date());
 
 				allocation.setCurDate(curDate);
-				allocation.setSegment("FO");
-				allocation.setCmCode(credentialsMap.getOrDefault("cmCode", ""));
-				allocation.setTmCode(credentialsMap.getOrDefault("tmCode", ""));
+//				allocation.setSegment("FO");
+				//allocation.setCmCode(credentialsMap.getOrDefault("cmCode", ""));
+				//allocation.setTmCode(credentialsMap.getOrDefault("tmCode", ""));
 				allocation.setCpCode("");
 				allocation.setCliCode(clientId);
 				allocation.setAccType("C");
@@ -160,12 +190,12 @@ public class GlobeRestService {
 				allocation.setFiller4("");
 				allocation.setFiller5("");
 				allocation.setFiller6("");
-				allocation.setAction("U");
+			//	allocation.setAction("U");
 
 				// Wrap allocation in data payload
 				AllocationData allocationData = new AllocationData();
 				String uniqueNumber = String.format("%07d", System.currentTimeMillis() % 10000000); // 7 chars
-				String tmCode = credentialsMap.getOrDefault("tmCode", "00000"); // 5 chars
+				 //tmCode = credentialsMap.getOrDefault("tmCode", "00000"); // 5 chars
 				String trDate = new SimpleDateFormat("ddMMyyyy").format(new Date()); // 8 chars (e.g., 23062025)
 				String msgId = tmCode + trDate + uniqueNumber; // total 20 chars
 
@@ -180,14 +210,19 @@ public class GlobeRestService {
 				AllocationRequestPayload payload = new AllocationRequestPayload();
 				payload.setAccessToken(tokenResponse.getAccessToken());
 				payload.setCompanytype(credentialsMap.getOrDefault("companytype", "GCML"));
-				payload.setClrtype(credentialsMap.getOrDefault("clrtype", "NCL"));
+				String clrType = withinTradingHours ? "NCL" : "MCXCCL";
+				payload.setClrtype(clrType);
+
+				//payload.setClrtype(credentialsMap.getOrDefault("clrtype", "NCL"));
 				payload.setDataFormat("JSON");
 				payload.setDataTotalCount("1");
 				payload.setData(allocationData);
 
+				System.out.println("the tokjrn id === " + payload );// message
+
 				returnResponse= globeRestService.sendAllocation("application/json", payload);
 				ObjectMapper obj = new ObjectMapper();
-				accessLogManager.insertRestAccessLogsIntoDB(null, "Globe", obj.writeValueAsString(returnResponse), "callAllocationApi", "/globe/updateCallAllocationApi");
+				accessLogManager.insertRestAccessLogsIntoDB(clientId,  obj.writeValueAsString(payload), obj.writeValueAsString(returnResponse), "callAllocationApi", "/globe/updateCallAllocationApi");
 				if(returnResponse.getMessagesCode().equalsIgnoreCase("100100")) {
 					Optional<PaymentTransactionEntity> paymentDT = paymentRepository
 							.findById(id);
@@ -197,10 +232,10 @@ public class GlobeRestService {
 						paymentRepository.save(res);
 						
 //						if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
-							techExcelService.updateTechExcel(clientId,
-									referenceNo,
-									amount,
-									accNo,id);
+//							techExcelService.updateTechExcel(clientId,
+//									referenceNo,
+//									amount,
+//									accNo,id);
 //						}
 					}
 				}
@@ -236,6 +271,10 @@ public class GlobeRestService {
 				request.setDataFormat("JSON");
 
 				StatusInquiryResponse resStatus = globeRestService.statusInquiry("application/json", request);
+				ObjectMapper obj = new ObjectMapper();
+
+				accessLogManager.insertRestAccessLogsIntoDB(null,obj.writeValueAsString(request), obj.writeValueAsString(resStatus), "callStatusInquiry", "/globe/updateCallAllocationApi");
+
 				saveInquiryResponse(resStatus, msgId);
 				return resStatus;
 			}

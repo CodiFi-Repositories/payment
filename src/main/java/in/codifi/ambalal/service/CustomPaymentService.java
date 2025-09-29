@@ -7,11 +7,15 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 import org.json.simple.JSONObject;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import in.codifi.ambalal.entity.PaymentTransactionEntity;
 import in.codifi.ambalal.error.utility.ErrorCodeConstants;
@@ -19,6 +23,7 @@ import in.codifi.ambalal.error.utility.ErrorHandling;
 import in.codifi.ambalal.error.utility.ErrorMessageConstants;
 import in.codifi.ambalal.error.utility.MessageConstants;
 import in.codifi.ambalal.repository.AccessLogManager;
+import in.codifi.ambalal.repository.GblAllocationRepository;
 import in.codifi.ambalal.repository.PaymentTransactionRepository;
 import in.codifi.ambalal.rest.service.GlobeRestService;
 import in.codifi.ambalal.rest.service.TechExcelService;
@@ -31,6 +36,8 @@ public class CustomPaymentService implements BasePaymentService {
 
 	@Inject
 	PaymentTransactionRepository paymentRepository;
+	@Inject
+	GblAllocationRepository gblAllocationRepository;
 	@Inject
 	GlobeRestService globeRestService;
 	@Inject
@@ -105,11 +112,25 @@ public class CustomPaymentService implements BasePaymentService {
 							}
  
 							// acquirer_data.rrn
+//							String rrn = null;
+//							if (entity.get("acquirer_data") instanceof JSONObject) {
+//								JSONObject acquirerData = (JSONObject) entity.get("acquirer_data");
+//								rrn = acquirerData.get("rrn") != null ? acquirerData.get("rrn").toString() : null;
+//							}
+							
+							// acquirer_data.rrn
 							String rrn = null;
 							if (entity.get("acquirer_data") instanceof JSONObject) {
-								JSONObject acquirerData = (JSONObject) entity.get("acquirer_data");
-								rrn = acquirerData.get("rrn") != null ? acquirerData.get("rrn").toString() : null;
+							    JSONObject acquirerData = (JSONObject) entity.get("acquirer_data");
+							    
+							    if (acquirerData.get("rrn") != null) {
+							        rrn = acquirerData.get("rrn").toString();
+							    } else if (acquirerData.get("bank_transaction_id") != null) {
+							        rrn = acquirerData.get("bank_transaction_id").toString();
+							    }
 							}
+
+							
  
 //	                        long value = amount / 100;
  
@@ -132,6 +153,7 @@ public class CustomPaymentService implements BasePaymentService {
 								paymentDT.setRazorpayMethod(method);
 								paymentDT.setRazorpayVpa(vpa);
 								paymentDT.setRazorpayRrn(rrn);
+
 								paymentDT.setRazorpayEmail(email);
 								paymentDT.setRazorpayContact(contact);
 								paymentDT.setRazorpayFee((int) fee);
@@ -156,34 +178,72 @@ public class CustomPaymentService implements BasePaymentService {
 									paymentDT.setStatus(EkycConstants.RAZORPAY_STATUS_FAILED);
 								}
  
-								responseEntity = paymentRepository.save(paymentDT);
-
-//									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateGlobe())) {
-//										System.out.println("the razorpay globe is running");
-//										globeRestService.callAllocationApi(clientCode,
-//												responseEntity.getAmountPaid().doubleValue(), // safer than casting
-//
-//												responseEntity.getRazorpayRrn(), responseEntity.getId(),
-//												responseEntity.getRazorpayAcountNumber().toString());
-////
-////										System.out.println("the razorpay globe is done");
-////												responseEntity.getRazorpayRrn()+"and"+ responseEntity.getId());
-//									}
-// 
-//									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
-//										techExcelService.updateTechExcel(responseEntity.getClientCode(),
-//												responseEntity.getRazorpayRrn(),
-//												responseEntity.getAmountPaid().doubleValue(),
-//												responseEntity.getRazorpayAcountNumber().toString(), responseEntity.getId());
-//									}
-
-//									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
-//										techExcelService.updateTechExcel(responseEntity.getClientCode(),
-//												responseEntity.getRazorpayRrn(),
-//												responseEntity.getAmountPaid().doubleValue(),
-//												responseEntity.getRazorpayAcountNumber().toString(), responseEntity.getId());
-//									}
+								responseEntity = paymentRepository.save(paymentDT);	
+					
+								ObjectMapper mapper = new ObjectMapper();
+								String json = mapper.writeValueAsString(responseEntity);
+						
 								
+								if (responseEntity != null && "captured".equalsIgnoreCase(status)
+										&& ( clientCode.equalsIgnoreCase("8100164")
+												)) {
+//						
+									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateGlobe())) {
+//								
+										// Old amount from gblAllocationRepository 8100056
+										Double oldAmount = gblAllocationRepository.findByClientCode(clientCode);
+										if (oldAmount == null) oldAmount = 0.0;										
+										//time format 
+										LocalDate txnLocalDate = LocalDateTime.ofInstant(Instant.ofEpochSecond(createdAt), ZoneId.of("Asia/Kolkata")).toLocalDate();
+										String txnDateStr = txnLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+										// Fetch sum
+										Double previousPaymentsAmount = paymentRepository.sumAmountByClientAndDate(clientCode, txnDateStr);
+										if (previousPaymentsAmount == null) {
+										    previousPaymentsAmount = 0.0;
+										}
+										//
+										
+										 // Get current time in Asia/Kolkata timezone
+									    LocalTime currentTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(createdAt), ZoneId.of("Asia/Kolkata")).toLocalTime();
+
+									    // Define start and end times
+									    LocalTime startTime = LocalTime.of(9, 0);      // 9:00 AM
+									    LocalTime endTime = LocalTime.of(16, 0);      // 3:30 PM
+
+									    Double totalAmount;
+									    if (!currentTime.isBefore(startTime) && !currentTime.isAfter(endTime)) {
+									        totalAmount = previousPaymentsAmount + oldAmount;
+									    } else {
+									        // Use the amountPaid value from the table 
+									        totalAmount =  (double)( amount / 100);
+									    }
+
+										//System.out.println("the amount to allocation:"+ totalAmount );
+
+										
+										//Double totalAmount = previousPaymentsAmount + oldAmount;
+
+							
+//										// Call allocation API with the summed amount
+										
+//									    globeRestService.callAllocationApi(clientCode,totalAmount,
+//										        responseEntity.getRazorpayRrn(),
+//										        responseEntity.getId(),
+//										        responseEntity.getRazorpayAcountNumber().toString());
+								
+								//		System.out.println("the razorpay globe is done");
+												//responseEntity.getRazorpayRrn()+"and"+ responseEntity.getId());
+									}
+ 
+//									if (!Boolean.TRUE.equals(responseEntity.getIsUpdateTechexcel())) {
+//										techExcelService.updateTechExcel(responseEntity.getClientCode(),
+//												responseEntity.getRazorpayRrn(),
+//												responseEntity.getAmountPaid().doubleValue(),
+//												responseEntity.getRazorpayAcountNumber().toString(), responseEntity.getId());
+//									}
+								}
+//									
+	//							
  
 							}
 						}
@@ -224,13 +284,15 @@ public class CustomPaymentService implements BasePaymentService {
 			String customerAccNo = formParams.getFirst("CustomerAccNo");
 			String clientCode = formParams.getFirst("Clientcode");
  
-			PaymentTransactionEntity paymentEntity = paymentRepository.findByClientCodeAndRazorpayPaymentId(clientCode,
-					txnId);
+
+			
+			PaymentTransactionEntity paymentEntity = paymentRepository.findByClientCodeAndTxnId(clientCode,
+					atomTxnId);
  
 			if (paymentEntity == null) {
 				paymentEntity = new PaymentTransactionEntity();
 				paymentEntity.setClientCode(clientCode);
-				paymentEntity.setTxnId(txnId);
+				paymentEntity.setAtomTxnId(atomTxnId);
 			}
  
 			paymentEntity.setMerchantId(merchantId);
@@ -252,15 +314,68 @@ public class CustomPaymentService implements BasePaymentService {
 			paymentEntity.setCustomerAccNo(customerAccNo);
 			paymentEntity.setIsAtom(true);
 			PaymentTransactionEntity savedEntity = paymentRepository.save(paymentEntity);
+		
+			
 			if (savedEntity != null && "SUCCESS".equalsIgnoreCase(status)
-					&& (clientCode.equalsIgnoreCase("8100056") || clientCode.equalsIgnoreCase("8100033"))) {
+					&& ( clientCode.equalsIgnoreCase("8100164")
+							)) {
+				
 				System.out.println("the atom globe is runnign");
 				if (!Boolean.TRUE.equals(savedEntity.getIsUpdateGlobe())) {
-					globeRestService.callAllocationApi(clientCode, savedEntity.getAmount(), // safer than casting
-							savedEntity.getAtomTxnId(), savedEntity.getId(), customerAccNo);
+					
+					Double oldAmount = gblAllocationRepository.findByClientCode(clientCode);
+					if (oldAmount == null) oldAmount = 0.0;
+			
+					// txnDate from webhook: "2025-08-22 09:51:24"
+					DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+					// Parse txnDate as LocalDateTime
+					LocalDateTime txnDateTime = LocalDateTime.parse(txnDate, inputFormatter);
+
+					// Extract date and format it
+					LocalDate txnLocalDate = txnDateTime.toLocalDate();
+					String txnDateStr = txnLocalDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+					// Use txnDateStr in your query
+					Double previousPaymentsAmount = paymentRepository.sumAmountByClientAndDate(clientCode, txnDateStr);
+					if (previousPaymentsAmount == null) {
+					    previousPaymentsAmount = 0.0;
+					}
+
+					// Extract time from txnDateTime
+					LocalTime currentTime = txnDateTime.toLocalTime();
+
+					    // Define start and end times
+					    LocalTime startTime = LocalTime.of(9, 0);      // 9:00 AM					    
+					    LocalTime endTime = LocalTime.of(16, 0);      // 3:30 PM
+
+
+					    Double totalAmount;
+					    if (!currentTime.isBefore(startTime) && !currentTime.isAfter(endTime)) {
+					        totalAmount = previousPaymentsAmount + oldAmount;
+					    } else {
+					        totalAmount = Double.parseDouble(amt);
+					    }
+					    
+						System.out.println("the amount to allocation::"+ totalAmount );
+
+
+					    
+					
+					//Double totalAmount = previousPaymentsAmount + oldAmount;
+
+//					globeRestService.callAllocationApi(clientCode, totalAmount, // safer than casting
+//						savedEntity.getAtomTxnId(), savedEntity.getId(), customerAccNo);
 
 					System.out.println("the atom globe is done");
 				}
+//				if (!Boolean.TRUE.equals(savedEntity.getIsUpdateTechexcel())) {
+//					techExcelService.updateTechExcel(clientCode,
+//							savedEntity.getAtomTxnId(),
+//							savedEntity.getAmount().doubleValue(),
+//							customerAccNo, savedEntity.getId());
+//				}
+				
 			}
 			return Response.ok(savedEntity).build();
 		} catch (Exception e) {

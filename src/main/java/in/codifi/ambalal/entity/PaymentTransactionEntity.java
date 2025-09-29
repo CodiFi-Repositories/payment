@@ -116,7 +116,6 @@ public class PaymentTransactionEntity {
     @Column(name = "razorpayWebhookRawData", columnDefinition = "TEXT")
     private String razorpayWebhookRawData;
     
-    
     @Column(name = "razorpayAcountNumber")
     private String razorpayAcountNumber;
     
@@ -129,6 +128,12 @@ public class PaymentTransactionEntity {
     
     @Transient
     private String referenceId;
+    
+    //New feild
+    
+//    @Column(name = "razorpay_Bank_Transaction_Id")
+//    private String razorpayBankTransactionId;
+    
     
     
     
